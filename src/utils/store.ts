@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk-ts'
 import { Dispatch, SetStateAction } from 'react'
 
-export interface Identity {
+export type Identity = {
   name: string
   profilePhoto: string,
   identityKey: string,

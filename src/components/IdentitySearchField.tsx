@@ -4,14 +4,14 @@ import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, 
 import SearchIcon from '@mui/icons-material/Search'
 import { Img } from 'uhrp-react'
 
-interface IdentityResolverProps {
+export interface IdentitySearchFieldProps {
   backgroundColor?: string
   font?: string
   confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void
 }
 
-const IdentityResolver: React.FC<IdentityResolverProps> = ({
+const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   backgroundColor = '#FFFFFF',
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
@@ -22,7 +22,6 @@ const IdentityResolver: React.FC<IdentityResolverProps> = ({
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
-
 
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue)
@@ -164,4 +163,4 @@ const IdentityResolver: React.FC<IdentityResolverProps> = ({
   )
 }
 
-export default IdentityResolver
+export default IdentitySearchField

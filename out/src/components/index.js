@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IdentityResolver = void 0;
-var IdentityResolver_1 = require("./IdentityResolver");
-Object.defineProperty(exports, "IdentityResolver", { enumerable: true, get: function () { return __importDefault(IdentityResolver_1).default; } });
+exports.IdentitySearchField = void 0;
+var IdentitySearchField_1 = require("./IdentitySearchField");
+Object.defineProperty(exports, "IdentitySearchField", { enumerable: true, get: function () { return __importDefault(IdentitySearchField_1).default; } });
 //# sourceMappingURL=index.js.map
