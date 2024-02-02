@@ -1,6 +1,6 @@
 # metanet-identity-react
 
-Tools for resolving identity information on the MetaNet.
+React components for resolving identity information on the MetaNet.
 
 The code is hosted [on GitHub](https://github.com/p2ppsr/metanet-identity-react) and the package is available [through NPM](https://www.npmjs.com/package/metanet-identity-react).
 
