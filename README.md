@@ -12,16 +12,16 @@ The code is hosted [on GitHub](https://github.com/p2ppsr/metanet-identity-react)
 
 ```ts
 import React, { useState } from 'react'
-import { IdentityResolver, Identity } from 'metanet-identity-react'
+import { IdentitySearchField, Identity } from 'metanet-identity-react'
 
 const IdentityDisplay: React.FC = () => {
   const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(null)
 
   return (
     <div>
-        <IdentityResolver onIdentitySelected={(identity) => {
+         <IdentitySearchField onIdentitySelected={(identity) => {
             setSelectedIdentity(identity)
-        }} />
+          }}/>
         {selectedIdentity && (
             <div>
                 <h2>Selected Identity</h2>
