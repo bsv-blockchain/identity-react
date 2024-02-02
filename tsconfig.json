@@ -12,7 +12,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "noEmit": false,  // Changed to false
     "jsx": "react",
     "sourceMap": true // Optional, but recommended for development

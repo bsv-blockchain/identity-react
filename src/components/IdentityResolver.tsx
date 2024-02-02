@@ -6,7 +6,7 @@ import { Img } from 'uhrp-react'
 
 interface IdentityResolverProps {
   backgroundColor?: string
-  font?: string,
+  font?: string
   confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void
 }

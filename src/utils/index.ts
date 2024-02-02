@@ -1,1 +1,1 @@
-export type { Identity } from './store'
+export { Identity } from './store'
