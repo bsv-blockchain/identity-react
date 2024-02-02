@@ -2,7 +2,11 @@
   "name": "metanet-identity-react",
   "description": "React components for resolving identity information on the MetaNet.",
   "version": "0.1.1",
-  "main": "src/index.ts",
+  "main": "./out/src/index.js",
+  "types": "./out/src/index.d.ts",
+  "files": [
+    "out"
+  ],
   "author": "Peer-to-peer Privacy Systems Research LLC",
   "license": "Open BSV License",
   "dependencies": {

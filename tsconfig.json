@@ -1,21 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "target": "es2017",
+    "module": "commonjs",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": false,
-    "noEmit": false,  // Changed to false
-    "jsx": "react",
-    "sourceMap": true // Optional, but recommended for development
+    "sourceMap": true,
+    "outDir": "out",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": ".",
+    "composite": true,
+    "noImplicitOverride": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src", "src/components"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "jest.config.ts"],
+  "references": []
 }
