@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useStore } from './store'
+import { useStore } from '../utils/store'
 import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, Box, Typography, LinearProgress } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import { Img } from 'uhrp-react'
@@ -99,11 +99,11 @@ const IdentityResolver: React.FC<IdentityResolverProps> = ({
                   ) : (
                     <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
                   ),
-                  style: { color: 'black' } // Text color
+                  style: { color: 'black' }
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    // borderRadius: '10px', // Adds rounded corners
+                    // borderRadius: '10px',
                   },
                   '& .MuiFilledInput-root': {
                     backgroundColor: backgroundColor,
