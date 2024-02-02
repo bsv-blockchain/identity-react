@@ -4,8 +4,8 @@ import { Dispatch, SetStateAction } from 'react'
 
 export type Identity = {
   name: string
-  profilePhoto: string,
-  identityKey: string,
+  profilePhoto: string
+  identityKey: string
   certifier: string
 }
 

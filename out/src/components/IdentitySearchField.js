@@ -67,7 +67,7 @@ const IdentitySearchField = ({ backgroundColor = '#FFFFFF', font = '"Roboto Mono
                                         right: 0,
                                         height: '2px',
                                     } })] }));
-                }, PaperComponent: ({ children }) => ((0, jsx_runtime_1.jsx)(material_1.Box, { sx: { backgroundColor: '#FFFFFF', color: 'black', '& ul': { padding: 0 } }, children: children })), renderOption: (props, option) => ((0, react_1.createElement)(material_1.ListItem, Object.assign({}, props, { key: option.name }),
+                }, PaperComponent: ({ children }) => ((0, jsx_runtime_1.jsx)(material_1.Box, { sx: { backgroundColor: '#FFFFFF', color: 'black', '& ul': { padding: 0 } }, children: children })), renderOption: (props, option) => ((0, react_1.createElement)(material_1.ListItem, Object.assign({}, props, { key: `${option.identityKey}${option.certifier}` }),
                     (0, jsx_runtime_1.jsx)(material_1.ListItemIcon, { children: (0, jsx_runtime_1.jsx)(material_1.Avatar, { children: (0, jsx_runtime_1.jsx)(uhrp_react_1.Img, { style: { width: '100%', height: 'auto' }, src: option.profilePhoto, confederacyHost: confederacyHost, loading: undefined }) }) }),
                     (0, jsx_runtime_1.jsx)(material_1.ListItemText, { primary: option.name, secondary: (0, jsx_runtime_1.jsx)(material_1.Typography, { variant: "body2", style: { color: 'gray' }, children: `${option.identityKey.slice(0, 10)}...` }) }))), style: { width: 300, backgroundColor: backgroundColor } }) }) }));
 };
