@@ -123,7 +123,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             </Box>
           )}
           renderOption={(props, option: Identity) => (
-            <ListItem {...props} key={option.name}>
+            <ListItem {...props} key={`${option.identityKey}${option.certifier}`}>
               <ListItemIcon>
                 {/* TODO: Support custom certifier badges */}
                 {/* <Badge
