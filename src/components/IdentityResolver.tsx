@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useStore } from '../utils/store'
-import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, Box, Typography, LinearProgress } from '@mui/material'
+import { Identity, useStore } from '../utils/store'
+import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, Box, Typography, LinearProgress, Icon, Badge } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import { Img } from 'uhrp-react'
-
-interface Identity {
-  name: string
-  profilePhoto: string,
-  identityKey: string
-}
 
 interface IdentityResolverProps {
   backgroundColor?: string
@@ -132,18 +126,37 @@ const IdentityResolver: React.FC<IdentityResolverProps> = ({
           renderOption={(props, option: Identity) => (
             <ListItem {...props} key={option.name}>
               <ListItemIcon>
-                <Avatar>
-                  <Img
-                    style={{ width: '100%', height: 'auto' }}
-                    src={option.profilePhoto}
-                    confederacyHost={confederacyHost}
-                    loading={undefined}                  
-                  />
-                </Avatar>
+                {/* TODO: Support custom certifier badges */}
+                {/* <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  badgeContent={
+                    <Icon style={{ backgroundColor: 'white', borderRadius: '50%' }}>
+                      {option.certifier}  
+                    </Icon>
+                  }
+                > */}
+                  <Avatar>
+                    <Img
+                      style={{ width: '100%', height: 'auto' }}
+                      src={option.profilePhoto}
+                      confederacyHost={confederacyHost}
+                      loading={undefined}
+                    />
+                  </Avatar>
+                {/* </Badge> */}
               </ListItemIcon>
-              <ListItemText primary={option.name} />
+              <ListItemText
+                primary={option.name}
+                secondary={
+                  <Typography variant="body2" style={{ color: 'gray' }}>
+                    {`${option.identityKey.slice(0, 10)}...`}
+                  </Typography>
+                }
+              />
             </ListItem>
           )}
+          
           style={{ width: 300, backgroundColor: backgroundColor }}
         />
       </Box>

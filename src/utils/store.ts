@@ -1,12 +1,12 @@
-// store.ts
 import { create } from 'zustand'
-import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk'
+import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk-ts'
 import { Dispatch, SetStateAction } from 'react'
 
 export interface Identity {
   name: string
   profilePhoto: string,
-  identityKey: string
+  identityKey: string,
+  certifier: string
 }
 
 interface IdentityStore {
@@ -26,13 +26,14 @@ function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number):
   }
 
 interface DecryptedField {
-    firstName: string;
-    profilePhoto: string;
+    firstName: string
+    profilePhoto: string
 }
 
 interface SigniaResult {
-    subject: string;
-    decryptedFields: DecryptedField;
+    subject: string
+    decryptedFields: DecryptedField
+    certifier: string
 }
 
 export const useStore = create<IdentityStore>((set) => ({
@@ -49,7 +50,8 @@ export const useStore = create<IdentityStore>((set) => ({
         return {
             name: x.decryptedFields.firstName,
             profilePhoto: x.decryptedFields.profilePhoto,
-            identityKey: x.subject
+            identityKey: x.subject,
+            certifier: x.certifier
         }
     } )
     console.log(matchingIdentities)
