@@ -1,0 +1,1 @@
+export { Identity } from './metanet-identity-types'

@@ -1,3 +1,3 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+// export { Identity } from './store'
 //# sourceMappingURL=index.js.map

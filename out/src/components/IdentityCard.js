@@ -6,7 +6,7 @@ const react_1 = require("react");
 const sdk_ts_1 = require("@babbage/sdk-ts");
 const uhrp_react_1 = require("uhrp-react");
 const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babbage.systems' }) => {
-    const [resolvedIdentity, setResolvedIdentity] = (0, react_1.useState)({ name: 'Unknown', profilePhoto: 'tbd' });
+    const [resolvedIdentity, setResolvedIdentity] = (0, react_1.useState)({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' });
     (0, react_1.useEffect)(() => {
         (async () => {
             try {

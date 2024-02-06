@@ -1,5 +1,5 @@
 import React from 'react';
-import { Identity } from '../utils/store';
+import { Identity } from '../types/metanet-identity-types';
 export interface IdentitySearchFieldProps {
     backgroundColor?: string;
     font?: string;

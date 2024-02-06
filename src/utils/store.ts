@@ -1,34 +1,6 @@
 import { create } from 'zustand'
 import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk-ts'
-import { Dispatch, SetStateAction } from 'react'
-
-export type Identity = {
-  name: string
-  profilePhoto: string
-  identityKey: string
-  certifier: Certifier
-}
-
-interface IdentityStore {
-  identities: Identity[]
-  fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => void
-}
-
-interface DecryptedField {
-    firstName: string
-    profilePhoto: string
-}
-
-interface Certifier {
-  publicKey: string,
-  icon: string
-}
-
-interface SigniaResult {
-    subject: string
-    decryptedFields: DecryptedField
-    certifier: Certifier
-}
+import { IdentityStore, SigniaResult } from '../types/metanet-identity-types'
 
 function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number): (...args: Parameters<F>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null

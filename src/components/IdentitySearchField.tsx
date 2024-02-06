@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Identity, useStore } from '../utils/store'
-import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, Box, Typography, LinearProgress, Icon, Badge } from '@mui/material'
+import { useStore } from '../utils/store'
+import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, Box, Typography, LinearProgress, Icon, Badge, Tooltip } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import { Img } from 'uhrp-react'
+import { Identity } from '../types/metanet-identity-types'
 
 export interface IdentitySearchFieldProps {
   backgroundColor?: string
@@ -126,6 +127,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             return (
             <ListItem {...props} key={`${option.identityKey}${option.certifier.publicKey}`}>
               <ListItemIcon>
+              <Tooltip title={option.certifier ? `Certified by ${option.certifier.name}` : 'Unknown Certifier!'} placement="right">
                 <Badge
                   overlap="circular"
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -149,6 +151,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                     />
                   </Avatar>
                 </Badge>
+                </Tooltip>
               </ListItemIcon>
               <ListItemText
                 primary={option.name}

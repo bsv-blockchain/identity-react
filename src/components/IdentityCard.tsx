@@ -1,31 +1,11 @@
 import { Avatar, Card, CardContent, Typography } from "@mui/material"
-import { Identity } from "../utils"
 import { useEffect, useState } from "react"
 import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
-
-
-// TODO Move to helper file!
-interface DecryptedField {
-    firstName: string
-    profilePhoto: string
-}
-interface Certifier {
-  publicKey: string,
-  icon: string
-}
-interface SigniaResult {
-    subject: string
-    decryptedFields: DecryptedField
-    certifier: Certifier
-}
-interface IdentityProps {
-  identityKey: string,
-  confederacyHost: string
-}
+import { Identity, IdentityProps, SigniaResult } from "../types/metanet-identity-types"
 
 const IdentityCard: React.FC<IdentityProps> = ({ identityKey, confederacyHost = 'https://confederacy.babbage.systems' }) => {
-    const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Unknown', profilePhoto: 'tbd'} as Identity)
+    const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'} as Identity)
 
     useEffect(() => {
         (async () => {
@@ -39,7 +19,7 @@ const IdentityCard: React.FC<IdentityProps> = ({ identityKey, confederacyHost = 
 
             // Do we want to just pick the most trusted result?
             if (matchingIdentities.length > 0) {
-              const selectedIdentity = matchingIdentities[0] as SigniaResult
+              const selectedIdentity = matchingIdentities[0] as SigniaResult  
               setResolvedIdentity({
                   name: selectedIdentity.decryptedFields.firstName,
                   profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
