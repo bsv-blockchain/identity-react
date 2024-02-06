@@ -122,19 +122,24 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
               {children}
             </Box>
           )}
-          renderOption={(props, option: Identity) => (
-            <ListItem {...props} key={`${option.identityKey}${option.certifier}`}>
+          renderOption={(props, option: Identity) => {
+            return (
+            <ListItem {...props} key={`${option.identityKey}${option.certifier.publicKey}`}>
               <ListItemIcon>
-                {/* TODO: Support custom certifier badges */}
-                {/* <Badge
+                <Badge
                   overlap="circular"
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   badgeContent={
-                    <Icon style={{ backgroundColor: 'white', borderRadius: '50%' }}>
-                      {option.certifier}  
+                    <Icon style={{ width: '20px', height: '20px', backgroundColor: 'white', borderRadius: '20%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Img
+                        style={{ width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }}
+                        src={option.certifier ? option.certifier.icon : ''}
+                        confederacyHost={confederacyHost}
+                        loading={undefined}                  
+                      />
                     </Icon>
                   }
-                > */}
+                >
                   <Avatar>
                     <Img
                       style={{ width: '100%', height: 'auto' }}
@@ -143,7 +148,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                       loading={undefined}
                     />
                   </Avatar>
-                {/* </Badge> */}
+                </Badge>
               </ListItemIcon>
               <ListItemText
                 primary={option.name}
@@ -154,7 +159,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                 }
               />
             </ListItem>
-          )}
+          )}}
           
           style={{ width: 300, backgroundColor: backgroundColor }}
         />
