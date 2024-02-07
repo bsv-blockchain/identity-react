@@ -13,16 +13,70 @@ function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number):
   }
 }
 
+type Query = {
+  email?: string
+  phone?: string
+  username?: string
+  firstName?: string
+  lastName?: string
+}
+
+const parseAndConstructQuery = (input: string): Query => {
+  const query: Query = {}
+  // Regular expressions for different patterns
+  const emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const phonePattern: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/
+  const discordPattern: RegExp = /^[a-zA-Z0-9]+$/ 
+
+  if (emailPattern.test(input)) {
+    query.email = input
+  } else if (phonePattern.test(input)) {
+    query.phone = input
+  } else if (discordPattern.test(input) && input.includes('#')) {
+    query.username = input
+  } else {
+    // Split input by spaces to check for first/last names
+    const names: string[] = input.split(' ')
+    if (names.length > 1) {
+      query.firstName = names[0]
+      query.lastName = names.slice(1).join(' ')
+    } else {
+      // Assuming a single name could be either first or last name
+      // Here you might need a more sophisticated approach or user input
+      query.firstName = input // Default to first name, or allow the user to specify
+      // Alternatively, you could set it as lastName or even search both fields
+    }
+  }
+
+  return query
+}
+
+const isIdentityKey = (key) => {
+  const regex = /^(02|03|04)[0-9a-fA-F]{64}$/
+  return regex.test(key)
+}
+
 export const useStore = create<IdentityStore>((set) => ({
   identities: [],
   fetchIdentities: debounce(async (query: string, setIsLoading) => {
     console.log('is it fetching...?')
 
     setIsLoading(true)
-    const results = await discoverByAttributes({
-      attributes: { firstName: query },
-      description: 'Discover MetaNet Identity'
-    })
+    let results
+    // Figure out if the query is by IdentityKey
+    if (isIdentityKey(query)) {
+      results = await discoverByIdentityKey({
+        identityKey: query,
+        description: 'Discover MetaNet Identity'
+      })
+    } else {
+      const queryToSearch = parseAndConstructQuery(query)
+      results = await discoverByAttributes({
+        attributes: queryToSearch,
+        description: 'Discover MetaNet Identity'
+      })
+    }
+
     const matchingIdentities = (results as SigniaResult[]).map((x: SigniaResult) => {
         return {
             name: x.decryptedFields.firstName,

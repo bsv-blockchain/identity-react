@@ -27,7 +27,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue)
     setIsSelecting(false)
-    setSelectedIdentity({} as Identity);
+    setSelectedIdentity({} as Identity)
 
     // TODO: Consider using cached results
     // if (identities.some(identity => 
