@@ -4,16 +4,19 @@ import { Autocomplete, TextField, ListItem, ListItemIcon, ListItemText, Avatar, 
 import SearchIcon from '@mui/icons-material/Search'
 import { Img } from 'uhrp-react'
 import { Identity } from '../types/metanet-identity-types'
+import { Theme, useTheme } from '@mui/material/styles'
+import { minWidth } from '@mui/system'
+
 
 export interface IdentitySearchFieldProps {
-  backgroundColor?: string
+  theme: Theme
   font?: string
   confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void
 }
 
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
-  backgroundColor = '#FFFFFF',
+  theme = useTheme(),
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
   onIdentitySelected = (selectedIdentity: Identity) => {}
@@ -92,15 +95,24 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                   ) : (
                     <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
                   ),
-                  style: { color: 'black' }
+                  style: { color: theme.palette.mode === 'light' ? theme.palette.common.black : theme.palette.common.white}
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     // borderRadius: '10px',
                   },
                   '& .MuiFilledInput-root': {
-                    backgroundColor: backgroundColor,
-                  }
+                    backgroundColor: theme.palette.mode === 'light' ? theme.palette.common.white : theme.palette.grey[900]
+                  },
+                  '& label': { // Normal state
+                    color: theme.palette.mode === 'light' ? theme.palette.common.black : theme.palette.common.white
+                  },
+                  '& label.Mui-focused': { // Focused state
+                    color: theme.palette.mode === 'light' ? theme.palette.common.black : theme.palette.common.white
+                  },
+                  '& .MuiFilledInput-underline:after': {
+                    borderBottomColor: '#FC433F', // your desired color here
+                  },
                 }}
               />
               {isLoading && 
@@ -111,6 +123,9 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                     left: 0,
                     right: 0,
                     height: '2px',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: '#FC433F', // your desired solid color
+                    },
                   }}
                 />
               }
@@ -118,7 +133,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             )}
           }
           PaperComponent={({ children }) => (
-            <Box sx={{ backgroundColor: '#FFFFFF', color: 'black', '& ul': { padding: 0 } }}>
+            <Box sx={{ backgroundColor: theme.palette.mode === 'light' ? theme.palette.common.white : theme.palette.grey[900], color: theme.palette.mode === 'light' ? theme.palette.common.black : theme.palette.common.white, '& ul': { padding: 0 } }}>
               {children}
             </Box>
           )}
@@ -163,7 +178,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             </ListItem>
           )}}
           
-          style={{ width: 300, backgroundColor: backgroundColor }}
+          style={{ minWidth: '300px', backgroundColor:  theme.palette.mode === 'light' ? theme.palette.common.white : theme.palette.grey[900] }}
         />
       </Box>
     </Box>

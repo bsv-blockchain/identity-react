@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
 import { Identity, IdentityProps, SigniaResult } from "../types/metanet-identity-types"
+import { useTheme } from '@mui/material'
 
 const IdentityCard: React.FC<IdentityProps> = ({ 
   identityKey, 
@@ -10,7 +11,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
   themeMode = 'light'
 }) => {
     const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'} as Identity)
-
+    const theme = useTheme()
     useEffect(() => {
         (async () => {
           try {
