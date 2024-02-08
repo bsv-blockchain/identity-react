@@ -41,10 +41,7 @@ const parseAndConstructQuery = (input: string): Query => {
       query.firstName = names[0]
       query.lastName = names.slice(1).join(' ')
     } else {
-      // Assuming a single name could be either first or last name
-      // Here you might need a more sophisticated approach or user input
-      query.firstName = input // Default to first name, or allow the user to specify
-      // Alternatively, you could set it as lastName or even search both fields
+      query.firstName = input // Default to first name
     }
   }
 
@@ -79,7 +76,7 @@ export const useStore = create<IdentityStore>((set) => ({
 
     const matchingIdentities = (results as SigniaResult[]).map((x: SigniaResult) => {
         return {
-            name: x.decryptedFields.firstName,
+            name: `${x.decryptedFields.firstName} ${x.decryptedFields.lastName}`,
             profilePhoto: x.decryptedFields.profilePhoto,
             identityKey: x.subject,
             certifier: x.certifier

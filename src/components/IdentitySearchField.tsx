@@ -46,7 +46,6 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
   useEffect(() => {
     // If inputValue changes and we are not selecting, fetch the identity information
-    console.log('rerender...')
     if (inputValue && !isSelecting) {
       fetchIdentities(inputValue, setIsLoading)
     }
