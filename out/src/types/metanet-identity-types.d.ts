@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 export interface DecryptedField {
     firstName: string;
+    lastName: string;
     profilePhoto: string;
 }
 export interface Certifier {
@@ -15,7 +16,8 @@ export interface SigniaResult {
 }
 export interface IdentityProps {
     identityKey: string;
-    confederacyHost: string;
+    confederacyHost?: string;
+    themeMode?: 'light' | 'dark';
 }
 export interface IdentityStore {
     identities: Identity[];

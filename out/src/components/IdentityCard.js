@@ -5,8 +5,10 @@ const material_1 = require("@mui/material");
 const react_1 = require("react");
 const sdk_ts_1 = require("@babbage/sdk-ts");
 const uhrp_react_1 = require("uhrp-react");
-const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babbage.systems' }) => {
+const material_2 = require("@mui/material");
+const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babbage.systems', themeMode = 'light' }) => {
     const [resolvedIdentity, setResolvedIdentity] = (0, react_1.useState)({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' });
+    const theme = (0, material_2.useTheme)();
     (0, react_1.useEffect)(() => {
         (async () => {
             try {
@@ -20,7 +22,7 @@ const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babb
                 if (matchingIdentities.length > 0) {
                     const selectedIdentity = matchingIdentities[0];
                     setResolvedIdentity({
-                        name: selectedIdentity.decryptedFields.firstName,
+                        name: `${selectedIdentity.decryptedFields.firstName} ${selectedIdentity.decryptedFields.lastName}`,
                         profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
                         identityKey: selectedIdentity.subject,
                         certifier: selectedIdentity.certifier
@@ -29,8 +31,8 @@ const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babb
             }
             catch (e) { }
         })();
-    }, []);
-    return ((0, jsx_runtime_1.jsxs)(material_1.Card, { sx: { display: 'flex', alignItems: 'center', borderRadius: '16px', padding: '0.2em 0.4em 0.2em 0.5em', maxWidth: 345, backgroundColor: 'transparent' }, children: [(0, jsx_runtime_1.jsx)(material_1.Avatar, { alt: resolvedIdentity.name, sx: { width: '2.5em', height: '2.5em' }, children: (0, jsx_runtime_1.jsx)(uhrp_react_1.Img, { style: { width: '100%', height: 'auto' }, src: resolvedIdentity.profilePhoto, confederacyHost: confederacyHost, loading: undefined }) }), (0, jsx_runtime_1.jsxs)(material_1.CardContent, { sx: { flex: '1 0 auto', padding: '8px !important', "&:last-child": { paddingBottom: '8px !important' } }, children: [(0, jsx_runtime_1.jsx)(material_1.Typography, { variant: "h6", component: "div", fontSize: '1em', children: resolvedIdentity.name }), (0, jsx_runtime_1.jsx)(material_1.Typography, { variant: "body2", color: "text.secondary", children: identityKey ? identityKey.slice(0, 10) : (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, {}) })] })] }));
+    }, [identityKey]);
+    return ((0, jsx_runtime_1.jsxs)(material_1.Box, { sx: { display: 'flex', alignItems: 'center', borderRadius: '16px', padding: '0.2em 0.4em 0.2em 0.5em', maxWidth: 345, border: 'none', backgroundColor: 'transparent' }, children: [(0, jsx_runtime_1.jsx)(material_1.Tooltip, { title: resolvedIdentity.certifier ? `Certified by ${resolvedIdentity.certifier.name}` : 'Unknown Certifier!', placement: "right", children: (0, jsx_runtime_1.jsx)(material_1.Badge, { overlap: "circular", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }, badgeContent: (0, jsx_runtime_1.jsx)(material_1.Icon, { style: { width: '20px', height: '20px', backgroundColor: 'white', borderRadius: '20%', display: 'flex', alignItems: 'center', justifyContent: 'center' }, children: (0, jsx_runtime_1.jsx)(uhrp_react_1.Img, { style: { width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }, src: resolvedIdentity.certifier ? resolvedIdentity.certifier.icon : 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png', confederacyHost: confederacyHost, loading: undefined }) }), children: (0, jsx_runtime_1.jsx)(material_1.Avatar, { alt: resolvedIdentity.name, sx: { width: '2.5em', height: '2.5em' }, children: (0, jsx_runtime_1.jsx)(uhrp_react_1.Img, { style: { width: '100%', height: 'auto' }, src: resolvedIdentity.profilePhoto, confederacyHost: confederacyHost, loading: undefined }) }) }) }), (0, jsx_runtime_1.jsxs)(material_1.CardContent, { sx: { flex: '1 0 auto', padding: '8px !important', "&:last-child": { paddingBottom: '8px !important' } }, children: [(0, jsx_runtime_1.jsx)(material_1.Typography, { variant: "h6", component: "div", fontSize: '1em', color: themeMode === 'light' ? 'black' : 'white', children: resolvedIdentity.name }), (0, jsx_runtime_1.jsx)(material_1.Typography, { variant: "body2", color: themeMode === 'light' ? 'lightGray' : 'darkGray', children: identityKey ? identityKey.slice(0, 10) : (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, {}) })] })] }));
 };
 exports.default = IdentityCard;
 //# sourceMappingURL=IdentityCard.js.map

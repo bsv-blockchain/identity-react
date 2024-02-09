@@ -1,7 +1,8 @@
 import React from 'react';
 import { Identity } from '../types/metanet-identity-types';
+import { Theme } from '@mui/material/styles';
 export interface IdentitySearchFieldProps {
-    backgroundColor?: string;
+    theme: Theme;
     font?: string;
     confederacyHost?: string;
     onIdentitySelected?: (selectedIdentity: Identity) => void;
