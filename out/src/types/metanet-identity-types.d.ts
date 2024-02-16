@@ -1,8 +1,9 @@
 import { Dispatch, SetStateAction } from "react";
 export interface DecryptedField {
-    firstName: string;
-    lastName: string;
     profilePhoto: string;
+    firstName?: string;
+    lastName?: string;
+    userName?: string;
 }
 export interface Certifier {
     publicKey: string;

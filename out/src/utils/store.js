@@ -17,15 +17,14 @@ const parseAndConstructQuery = (input) => {
     // Regular expressions for different patterns
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phonePattern = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/;
-    const discordPattern = /^[a-zA-Z0-9]+$/;
+    // const discordPattern: RegExp = /^[a-zA-Z0-9]+$/
     if (emailPattern.test(input)) {
         query.email = input;
     }
     else if (phonePattern.test(input)) {
         query.phone = input;
-    }
-    else if (discordPattern.test(input) && input.includes('#')) {
-        query.username = input;
+        // } else if (discordPattern.test(input) && input.includes('#')) {
+        //   query.userName = input
     }
     else {
         // Split input by spaces to check for first/last names
@@ -63,10 +62,28 @@ exports.useStore = (0, zustand_1.create)((set) => ({
                 attributes: queryToSearch,
                 description: 'Discover MetaNet Identity'
             });
+            // TODO: Create better solution!
+            // Quick Hack to check discord handles
+            if (results.length === 0) {
+                results = await (0, sdk_ts_1.discoverByAttributes)({
+                    attributes: {
+                        userName: query
+                    },
+                    description: 'Discover MetaNet Identity'
+                });
+            }
         }
         const matchingIdentities = results.map((x) => {
+            // Test adding varied name props
+            const nameParts = [];
+            for (const key in x.decryptedFields) {
+                if (key === 'profilePhoto') {
+                    continue;
+                }
+                nameParts.push(x.decryptedFields[key]);
+            }
             return {
-                name: `${x.decryptedFields.firstName} ${x.decryptedFields.lastName}`,
+                name: nameParts.join(' '),
                 profilePhoto: x.decryptedFields.profilePhoto,
                 identityKey: x.subject,
                 certifier: x.certifier

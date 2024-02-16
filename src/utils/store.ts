@@ -5,7 +5,7 @@ import { IdentityStore, SigniaResult } from '../types/metanet-identity-types'
 function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number): (...args: Parameters<F>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  return function(...args: Parameters<F>) {
+  return function (...args: Parameters<F>) {
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
     }
@@ -16,7 +16,7 @@ function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number):
 type Query = {
   email?: string
   phone?: string
-  username?: string
+  userName?: string
   firstName?: string
   lastName?: string
 }
@@ -26,14 +26,14 @@ const parseAndConstructQuery = (input: string): Query => {
   // Regular expressions for different patterns
   const emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const phonePattern: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/
-  const discordPattern: RegExp = /^[a-zA-Z0-9]+$/ 
+  // const discordPattern: RegExp = /^[a-zA-Z0-9]+$/
 
   if (emailPattern.test(input)) {
     query.email = input
   } else if (phonePattern.test(input)) {
     query.phone = input
-  } else if (discordPattern.test(input) && input.includes('#')) {
-    query.username = input
+    // } else if (discordPattern.test(input) && input.includes('#')) {
+    //   query.userName = input
   } else {
     // Split input by spaces to check for first/last names
     const names: string[] = input.split(' ')
@@ -72,16 +72,36 @@ export const useStore = create<IdentityStore>((set) => ({
         attributes: queryToSearch,
         description: 'Discover MetaNet Identity'
       })
+      // TODO: Create better solution!
+      // Quick Hack to check discord handles
+      if (results.length === 0) {
+        results = await discoverByAttributes({
+          attributes: {
+            userName: query
+          },
+          description: 'Discover MetaNet Identity'
+        })
+      }
     }
 
     const matchingIdentities = (results as SigniaResult[]).map((x: SigniaResult) => {
-        return {
-            name: `${x.decryptedFields.firstName} ${x.decryptedFields.lastName}`,
-            profilePhoto: x.decryptedFields.profilePhoto,
-            identityKey: x.subject,
-            certifier: x.certifier
+
+      // Test adding varied name props
+      const nameParts: string[] = []
+      for (const key in x.decryptedFields) {
+        if (key === 'profilePhoto') {
+          continue
         }
-    } )
+        nameParts.push(x.decryptedFields[key])
+      }
+
+      return {
+        name: nameParts.join(' '),
+        profilePhoto: x.decryptedFields.profilePhoto,
+        identityKey: x.subject,
+        certifier: x.certifier
+      }
+    })
     console.log(matchingIdentities)
     setIsLoading(false)
 

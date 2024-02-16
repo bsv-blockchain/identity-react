@@ -1,9 +1,10 @@
 import { Dispatch, SetStateAction } from "react"
 
 export interface DecryptedField {
-    firstName: string
-    lastName: string
-    profilePhoto: string
+  profilePhoto: string
+  firstName?: string
+  lastName?: string
+  userName?: string
 }
 export interface Certifier {
   publicKey: string,
@@ -11,9 +12,9 @@ export interface Certifier {
   name: string
 }
 export interface SigniaResult {
-    subject: string
-    decryptedFields: DecryptedField
-    certifier: Certifier
+  subject: string
+  decryptedFields: DecryptedField
+  certifier: Certifier
 }
 
 export interface IdentityProps {
@@ -23,13 +24,13 @@ export interface IdentityProps {
 }
 
 export interface IdentityStore {
-    identities: Identity[]
-    fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => void
+  identities: Identity[]
+  fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => void
 }
 
 export interface Identity {
-    name: string
-    profilePhoto: string
-    identityKey: string
-    certifier: Certifier
+  name: string
+  profilePhoto: string
+  identityKey: string
+  certifier: Certifier
 }
