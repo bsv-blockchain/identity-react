@@ -13,41 +13,6 @@ function debounce<F extends (...args: any[]) => void>(func: F, waitFor: number):
   }
 }
 
-type Query = {
-  email?: string
-  phone?: string
-  userName?: string
-  firstName?: string
-  lastName?: string
-}
-
-const parseAndConstructQuery = (input: string): Query => {
-  const query: Query = {}
-  // Regular expressions for different patterns
-  const emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const phonePattern: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/
-  // const discordPattern: RegExp = /^[a-zA-Z0-9]+$/
-
-  if (emailPattern.test(input)) {
-    query.email = input
-  } else if (phonePattern.test(input)) {
-    query.phone = input
-    // } else if (discordPattern.test(input) && input.includes('#')) {
-    //   query.userName = input
-  } else {
-    // Split input by spaces to check for first/last names
-    const names: string[] = input.split(' ')
-    if (names.length > 1) {
-      query.firstName = names[0]
-      query.lastName = names.slice(1).join(' ')
-    } else {
-      query.firstName = input // Default to first name
-    }
-  }
-
-  return query
-}
-
 const isIdentityKey = (key) => {
   const regex = /^(02|03|04)[0-9a-fA-F]{64}$/
   return regex.test(key)
@@ -67,9 +32,10 @@ export const useStore = create<IdentityStore>((set) => ({
         description: 'Discover MetaNet Identity'
       })
     } else {
-      const queryToSearch = parseAndConstructQuery(query)
       results = await discoverByAttributes({
-        attributes: queryToSearch,
+        attributes: {
+          any: query
+        },
         description: 'Discover MetaNet Identity'
       })
       // TODO: Create better solution!
