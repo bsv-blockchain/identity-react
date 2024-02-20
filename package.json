@@ -10,7 +10,7 @@
   "author": "Peer-to-peer Privacy Systems Research LLC",
   "license": "Open BSV License",
   "dependencies": {
-    "@babbage/sdk-ts": "^0.1.5",
+    "@babbage/sdk-ts": "^0.1.11",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
@@ -19,7 +19,7 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "react": "^17.0.2",
-    "uhrp-react": "^0.1.33",
+    "uhrp-react": "^0.1.44",
     "zustand": "^4.5.0"
   },
   "scripts": {
