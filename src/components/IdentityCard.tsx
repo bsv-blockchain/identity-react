@@ -14,31 +14,29 @@ const IdentityCard: React.FC<IdentityProps> = ({
   confederacyHost = 'https://confederacy.babbage.systems',
   themeMode = 'light'
 }) => {
-  const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' } as Identity)
+  const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Stranger', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' } as Identity)
   useEffect(() => {
     (async () => {
       try {
         // Resolve a Signia verified identity from a counterparty
-        // debugger
         const matchingIdentities = await discoverByIdentityKey({
           identityKey,
           description: 'Resolve identity information from your trusted certifiers.'
         })
 
-        // Do we want to just pick the most trusted result?
+        // Select the first result which is the most trusted
         if (matchingIdentities.length > 0) {
           const selectedIdentity = matchingIdentities[0] as SigniaResult
 
-          const { decryptedFields } = selectedIdentity
           let name = 'Unsupported Name'
           switch (selectedIdentity.type) {
             case knownCertificateTypes.identiCert: {
-              const { firstName, lastName } = decryptedFields
+              const { firstName, lastName } = selectedIdentity.decryptedFields
               name = `${firstName} ${lastName}`
               break;
             }
             case knownCertificateTypes.socialCert: {
-              const { userName, email, phoneNumber } = decryptedFields;
+              const { userName, email, phoneNumber } = selectedIdentity.decryptedFields;
               name = userName || email || phoneNumber || name
               break;
             }
@@ -53,7 +51,9 @@ const IdentityCard: React.FC<IdentityProps> = ({
             certifier: selectedIdentity.certifier
           })
         }
-      } catch (e) { }
+      } catch (e) {
+        console.error(e)
+      }
     })()
   }, [identityKey])
 
