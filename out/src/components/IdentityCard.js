@@ -5,10 +5,12 @@ const material_1 = require("@mui/material");
 const react_1 = require("react");
 const sdk_ts_1 = require("@babbage/sdk-ts");
 const uhrp_react_1 = require("uhrp-react");
-const material_2 = require("@mui/material");
+const knownCertificateTypes = {
+    identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
+    socialCert: '2TgqRC35B1zehGmB21xveZNc7i5iqHc0uxMb+1NMPW4='
+};
 const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babbage.systems', themeMode = 'light' }) => {
     const [resolvedIdentity, setResolvedIdentity] = (0, react_1.useState)({ name: 'Unknown', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' });
-    const theme = (0, material_2.useTheme)();
     (0, react_1.useEffect)(() => {
         (async () => {
             try {
@@ -21,8 +23,24 @@ const IdentityCard = ({ identityKey, confederacyHost = 'https://confederacy.babb
                 // Do we want to just pick the most trusted result?
                 if (matchingIdentities.length > 0) {
                     const selectedIdentity = matchingIdentities[0];
+                    const { decryptedFields } = selectedIdentity;
+                    let name = 'Unsupported Name';
+                    switch (selectedIdentity.type) {
+                        case knownCertificateTypes.identiCert: {
+                            const { firstName, lastName } = decryptedFields;
+                            name = `${firstName} ${lastName}`;
+                            break;
+                        }
+                        case knownCertificateTypes.socialCert: {
+                            const { userName, email, phoneNumber } = decryptedFields;
+                            name = userName || email || phoneNumber || name;
+                            break;
+                        }
+                        default:
+                            break;
+                    }
                     setResolvedIdentity({
-                        name: `${selectedIdentity.decryptedFields.firstName} ${selectedIdentity.decryptedFields.lastName}`,
+                        name,
                         profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
                         identityKey: selectedIdentity.subject,
                         certifier: selectedIdentity.certifier

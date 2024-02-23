@@ -1,1 +1,1 @@
-{"version":3,"file":"IdentityCard.d.ts","sourceRoot":"","sources":["../../../src/components/IdentityCard.tsx"],"names":[],"mappings":";AAIA,OAAO,EAAY,aAAa,EAAgB,MAAM,iCAAiC,CAAA;AAGvF,QAAA,MAAM,YAAY,EAAE,KAAK,CAAC,EAAE,CAAC,aAAa,CAoEvC,CAAA;AAED,eAAe,YAAY,CAAA"}
+{"version":3,"file":"IdentityCard.d.ts","sourceRoot":"","sources":["../../../src/components/IdentityCard.tsx"],"names":[],"mappings":";AAIA,OAAO,EAAY,aAAa,EAAgB,MAAM,iCAAiC,CAAA;AAOvF,QAAA,MAAM,YAAY,EAAE,KAAK,CAAC,EAAE,CAAC,aAAa,CAqFzC,CAAA;AAED,eAAe,YAAY,CAAA"}

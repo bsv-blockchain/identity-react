@@ -5,6 +5,8 @@ export interface DecryptedField {
   firstName?: string
   lastName?: string
   userName?: string
+  email?: string
+  phoneNumber?: string
 }
 export interface Certifier {
   publicKey: string,
@@ -12,9 +14,11 @@ export interface Certifier {
   name: string
 }
 export interface SigniaResult {
-  subject: string
-  decryptedFields: DecryptedField
   certifier: Certifier
+  decryptedFields: DecryptedField
+  subject: string
+  type: string
+  signature: string
 }
 
 export interface IdentityProps {
