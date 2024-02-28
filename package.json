@@ -14,11 +14,11 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.13.6",
+    "@mui/material": "^5.0.0",
     "@mui/styles": "^5.13.2",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
-    "react": "^17.0.2",
+    "react": "^18.2.0",
     "uhrp-react": "^0.1.44",
     "zustand": "^4.5.0"
   },
@@ -41,9 +41,5 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "standard": "^17.0.0",
     "typescript": "^5.3.3"
-  },
-  "peerDependencies": {
-    "@mui/material": "^5.0.0",
-    "react": "^17.0.2"
   }
 }
