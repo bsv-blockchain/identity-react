@@ -1,2 +1,2 @@
-export { useMetanetIdentity } from './useMetanetIdentity';
+export { useIdentitySearch } from './useIdentitySearch';
 //# sourceMappingURL=index.d.ts.map

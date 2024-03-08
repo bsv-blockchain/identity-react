@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useMetanetIdentity = void 0;
-var useMetanetIdentity_1 = require("./useMetanetIdentity");
-Object.defineProperty(exports, "useMetanetIdentity", { enumerable: true, get: function () { return useMetanetIdentity_1.useMetanetIdentity; } });
+exports.useIdentitySearch = void 0;
+var useIdentitySearch_1 = require("./useIdentitySearch");
+Object.defineProperty(exports, "useIdentitySearch", { enumerable: true, get: function () { return useIdentitySearch_1.useIdentitySearch; } });
 //# sourceMappingURL=index.js.map

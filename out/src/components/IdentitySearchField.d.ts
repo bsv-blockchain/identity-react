@@ -1,6 +1,6 @@
-import React from 'react';
-import { Identity } from '../types/metanet-identity-types';
-import { Theme } from '@mui/material/styles';
+import { Theme } from "@mui/material/styles";
+import React from "react";
+import { Identity } from "../types/metanet-identity-types";
 export interface IdentitySearchFieldProps {
     theme: Theme;
     font?: string;
