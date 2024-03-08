@@ -20,7 +20,7 @@ import {
 import { Theme, useTheme } from '@mui/material/styles'
 
 export interface IdentitySearchFieldProps {
-  theme: Theme
+  theme?: Theme
   font?: string
   confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void
@@ -30,7 +30,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme = useTheme(),
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
-  onIdentitySelected = (selectedIdentity: Identity) => {}
+  onIdentitySelected = (selectedIdentity: Identity) => { }
 }) => {
   const [inputValue, setInputValue] = useState('')
   const { identities, fetchIdentities } = useStore()
