@@ -34,6 +34,70 @@ const IdentityDisplay: React.FC = () => {
 }
 ```
 
+## Example Headless Usage (useIdentitySearch Hook)
+
+```ts
+import { useIdentitySearch } from "metanet-identity-react"
+
+const App = () => {
+  
+  const {
+    identities,
+    isLoading,
+    setIsLoading,
+    inputValue,
+    setInputValue,
+    selectedIdentity,
+    setSelectedIdentity,
+  } = useIdentitySearch()
+
+  return (
+    <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <input
+          onChange={(e) => {
+            setInputValue(e, e.target.value)
+          }}
+        />
+        {isLoading ? (
+          <p>Loading identities...</p>
+        ) : (
+          <>
+            {inputValue !== "" && (
+              <>
+                {identities.map((identity, index) => {
+                  return (
+                    <button key={index}
+                      onClick={(e) => {
+                        setSelectedIdentity(e, identity)
+                      }}
+                    >
+                      {identity.name}
+                    </button>
+                  )
+                })}
+              </>
+            )}
+          </>
+        )}
+        {selectedIdentity && (
+          <>
+            <h1>Selected Identity:</h1>
+            <p>{selectedIdentity.name}</p>
+            <img src={selectedIdentity.profilePhoto} width={64} />
+            <p style={{ wordWrap: "break-word" }}>
+              Identity Key: {selectedIdentity.identityKey}
+            </p>
+          </>
+        )}
+      </div>
+    </>
+  )
+}
+
+export default App
+```
+
 ## License
 
 The license for the code in this repository is the Open BSV License.

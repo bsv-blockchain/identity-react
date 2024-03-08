@@ -1,8 +1,8 @@
-import { Avatar, Badge, Box, Card, CardContent, Icon, Tooltip, Typography } from "@mui/material"
-import { useEffect, useState } from "react"
+import { Avatar, Badge, Box, Card, CardContent, Icon, Tooltip, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
-import { Identity, IdentityProps, SigniaResult } from "../types/metanet-identity-types"
+import { Identity, IdentityProps, SigniaResult } from '../types/metanet-identity-types'
 
 const knownCertificateTypes = {
   identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
@@ -14,9 +14,12 @@ const IdentityCard: React.FC<IdentityProps> = ({
   confederacyHost = 'https://confederacy.babbage.systems',
   themeMode = 'light'
 }) => {
-  const [resolvedIdentity, setResolvedIdentity] = useState({ name: 'Stranger', profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png' } as Identity)
+  const [resolvedIdentity, setResolvedIdentity] = useState({
+    name: 'Stranger',
+    profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
+  } as Identity)
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
         // Resolve a Signia verified identity from a counterparty
         const matchingIdentities = await discoverByIdentityKey({
@@ -33,15 +36,15 @@ const IdentityCard: React.FC<IdentityProps> = ({
             case knownCertificateTypes.identiCert: {
               const { firstName, lastName } = selectedIdentity.decryptedFields
               name = `${firstName} ${lastName}`
-              break;
+              break
             }
             case knownCertificateTypes.socialCert: {
-              const { userName, email, phoneNumber } = selectedIdentity.decryptedFields;
+              const { userName, email, phoneNumber } = selectedIdentity.decryptedFields
               name = userName || email || phoneNumber || name
-              break;
+              break
             }
             default:
-              break;
+              break
           }
 
           setResolvedIdentity({
@@ -58,16 +61,47 @@ const IdentityCard: React.FC<IdentityProps> = ({
   }, [identityKey])
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', borderRadius: '16px', padding: '0.2em 0.4em 0.2em 0.5em', maxWidth: 345, border: 'none', backgroundColor: 'transparent' }}>
-      <Tooltip title={resolvedIdentity.certifier ? `Certified by ${resolvedIdentity.certifier.name}` : 'Unknown Certifier!'} placement="right">
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        borderRadius: '16px',
+        padding: '0.2em 0.4em 0.2em 0.5em',
+        maxWidth: 345,
+        border: 'none',
+        backgroundColor: 'transparent'
+      }}
+    >
+      <Tooltip
+        title={
+          resolvedIdentity.certifier
+            ? `Certified by ${resolvedIdentity.certifier.name}`
+            : 'Unknown Certifier!'
+        }
+        placement="right"
+      >
         <Badge
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           badgeContent={
-            <Icon style={{ width: '20px', height: '20px', backgroundColor: 'white', borderRadius: '20%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon
+              style={{
+                width: '20px',
+                height: '20px',
+                backgroundColor: 'white',
+                borderRadius: '20%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <Img
                 style={{ width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }}
-                src={resolvedIdentity.certifier ? resolvedIdentity.certifier.icon : 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'}
+                src={
+                  resolvedIdentity.certifier
+                    ? resolvedIdentity.certifier.icon
+                    : 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
+                }
                 confederacyHost={confederacyHost}
                 loading={undefined}
               />
@@ -84,8 +118,19 @@ const IdentityCard: React.FC<IdentityProps> = ({
           </Avatar>
         </Badge>
       </Tooltip>
-      <CardContent sx={{ flex: '1 0 auto', padding: '8px !important', "&:last-child": { paddingBottom: '8px !important' } }}>
-        <Typography variant="h6" component="div" fontSize={'1em'} color={themeMode === 'light' ? 'black' : 'white'}>
+      <CardContent
+        sx={{
+          flex: '1 0 auto',
+          padding: '8px !important',
+          '&:last-child': { paddingBottom: '8px !important' }
+        }}
+      >
+        <Typography
+          variant="h6"
+          component="div"
+          fontSize={'1em'}
+          color={themeMode === 'light' ? 'black' : 'white'}
+        >
           {resolvedIdentity.name}
         </Typography>
         <Typography variant="body2" color={themeMode === 'light' ? 'lightGray' : 'darkGray'}>
