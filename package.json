@@ -1,7 +1,7 @@
 {
   "name": "metanet-identity-react",
   "description": "React components for resolving identity information on the MetaNet.",
-  "version": "0.1.18",
+  "version": "0.1.14",
   "main": "./out/src/index.js",
   "types": "./out/src/index.d.ts",
   "files": [
