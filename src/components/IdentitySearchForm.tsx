@@ -17,7 +17,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ fields, onSubmit }) => {
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   const handleChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }))
+    setFormData(prev => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async () => {
@@ -32,12 +32,12 @@ const SearchForm: React.FC<SearchFormProps> = ({ fields, onSubmit }) => {
   return (
     <form noValidate autoComplete="off">
       <Grid container spacing={2}>
-        {fields.map((field) => (
+        {fields.map(field => (
           <Grid item xs={12} sm={6} key={field.key}>
             <SearchField
               label={field.label}
               value={formData[field.key] || ''}
-              onChange={(value) => handleChange(field.key, value)}
+              onChange={value => handleChange(field.key, value)}
             />
           </Grid>
         ))}

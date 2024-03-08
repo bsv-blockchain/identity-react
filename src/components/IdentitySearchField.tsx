@@ -1,3 +1,7 @@
+import React, { useEffect, useState } from 'react'
+import { Identity } from '../types/metanet-identity-types'
+import { useStore } from '../utils/store'
+import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
 import {
   Autocomplete,
@@ -14,10 +18,6 @@ import {
   Typography
 } from '@mui/material'
 import { Theme, useTheme } from '@mui/material/styles'
-import React, { useEffect, useState } from 'react'
-import { Img } from 'uhrp-react'
-import { Identity } from '../types/metanet-identity-types'
-import { useStore } from '../utils/store'
 
 export interface IdentitySearchFieldProps {
   theme: Theme

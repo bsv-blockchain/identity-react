@@ -5,12 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
 const jsx_runtime_1 = require("react/jsx-runtime");
+const react_2 = require("react");
+const store_1 = require("../utils/store");
+const uhrp_react_1 = require("uhrp-react");
 const Search_1 = __importDefault(require("@mui/icons-material/Search"));
 const material_1 = require("@mui/material");
 const styles_1 = require("@mui/material/styles");
-const react_2 = require("react");
-const uhrp_react_1 = require("uhrp-react");
-const store_1 = require("../utils/store");
 const IdentitySearchField = ({ theme = (0, styles_1.useTheme)(), font = '"Roboto Mono", monospace', confederacyHost = 'https://confederacy.babbage.systems', onIdentitySelected = (selectedIdentity) => { } }) => {
     const [inputValue, setInputValue] = (0, react_2.useState)('');
     const { identities, fetchIdentities } = (0, store_1.useStore)();
