@@ -11,7 +11,9 @@ const uhrp_react_1 = require("uhrp-react");
 const Search_1 = __importDefault(require("@mui/icons-material/Search"));
 const material_1 = require("@mui/material");
 const styles_1 = require("@mui/material/styles");
-const IdentitySearchField = ({ theme = (0, styles_1.useTheme)(), font = '"Roboto Mono", monospace', confederacyHost = 'https://confederacy.babbage.systems', onIdentitySelected = (selectedIdentity) => { } }) => {
+const IdentitySearchField = ({ theme: themeProp, font = '"Roboto Mono", monospace', confederacyHost = 'https://confederacy.babbage.systems', onIdentitySelected = (selectedIdentity) => { } }) => {
+    // Fallback to the default theme from the context
+    const theme = themeProp || (0, styles_1.useTheme)();
     const [inputValue, setInputValue] = (0, react_2.useState)('');
     const { identities, fetchIdentities } = (0, store_1.useStore)();
     const [selectedIdentity, setSelectedIdentity] = (0, react_2.useState)({});

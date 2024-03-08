@@ -27,11 +27,14 @@ export interface IdentitySearchFieldProps {
 }
 
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
-  theme = useTheme(),
+  theme: themeProp,
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
   onIdentitySelected = (selectedIdentity: Identity) => { }
 }) => {
+  // Fallback to the default theme from the context
+  const theme = themeProp || useTheme()!
+
   const [inputValue, setInputValue] = useState('')
   const { identities, fetchIdentities } = useStore()
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
