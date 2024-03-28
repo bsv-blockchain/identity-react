@@ -16,7 +16,7 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "react": "^18.2.0",
-    "uhrp-react": "^0.2.12",
+    "uhrp-react": "^0.2.13",
     "zustand": "^4.5.0"
   },
   "scripts": {
