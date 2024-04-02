@@ -29,7 +29,7 @@ export interface IdentityProps {
 
 export interface IdentityStore {
   identities: Identity[]
-  fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => void
+  fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => Promise<void>
 }
 
 export interface Identity {

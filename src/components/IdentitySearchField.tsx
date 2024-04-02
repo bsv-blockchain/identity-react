@@ -18,6 +18,8 @@ import {
   Typography
 } from '@mui/material'
 import { Theme, useTheme } from '@mui/material/styles'
+import useAsyncEffect from 'use-async-effect'
+import { NoMncModal } from 'metanet-react-prompt'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -40,6 +42,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
+  const [isMncMissing, setIsMncMissing] = useState(false) // Added state to control NoMncModal visibility
 
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue)
@@ -61,10 +64,24 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     }
   }
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     // If inputValue changes and we are not selecting, fetch the identity information
-    if (inputValue && !isSelecting) {
-      fetchIdentities(inputValue, setIsLoading)
+    try {
+      if (inputValue && !isSelecting) {
+        await fetchIdentities(inputValue, setIsLoading)
+        setIsMncMissing(false)
+      }
+    } catch (error) {
+      setIsLoading(false)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      if (error.code === 'ERR_NO_METANET_IDENTITY') {
+        setIsMncMissing(true)
+        console.log(error)
+      } else {
+        // Handle other errors or rethrow them
+        console.error(error)
+      }
     }
   }, [inputValue, isSelecting])
 
@@ -79,6 +96,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
         padding: '20px'
       }}
     >
+      <NoMncModal open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           position: 'relative',
