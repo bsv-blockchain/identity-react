@@ -5,6 +5,9 @@
   "main": "dist/metanet-identity-react.js",
   "author": "Peer-to-peer Privacy Systems Research LLC",
   "license": "Open BSV License",
+  "files": [
+  "dist/**/*"
+],
   "dependencies": {
     "@babbage/sdk-ts": "^0.2.9",
     "@mui/icons-material": "^5.11.16",
