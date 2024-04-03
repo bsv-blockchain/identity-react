@@ -8,7 +8,7 @@
   "files": [
     "dist/**/*"
   ],
-  "types": "dist/types/index.d.ts",
+  "types": "dist/src/types/index.d.ts",
   "dependencies": {
     "@babbage/sdk-ts": "^0.2.9",
     "@mui/icons-material": "^5.11.16",
