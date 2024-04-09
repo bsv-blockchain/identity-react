@@ -2,30 +2,27 @@
   "name": "metanet-identity-react",
   "description": "React components for resolving identity information on the MetaNet.",
   "version": "0.1.31",
-  "main": "dist/metanet-identity-react.js",
   "author": "Peer-to-peer Privacy Systems Research LLC",
   "license": "Open BSV License",
+  "main": "./out/src/index.js",
+  "types": "./out/src/index.d.ts",
   "files": [
-    "dist/**/*"
+    "out"
   ],
-  "types": "dist/src/types/index.d.ts",
   "dependencies": {
     "@babbage/sdk-ts": "^0.2.15",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.15.7",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
-    "metanet-react-prompt": "^0.1.2",
+    "metanet-react-prompt": "^0.1.8",
     "react": "^18.2.0",
     "uhrp-react": "^0.2.19",
     "use-async-effect": "^2.2.7",
     "zustand": "^4.5.0"
   },
   "scripts": {
-    "build:tsc": "tsc",
-    "start": "webpack serve --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "build": "tsc"
   },
   "eslintConfig": {
     "extends": [
@@ -34,30 +31,12 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.18.5",
-    "@babel/preset-env": "^7.18.2",
-    "@babel/preset-react": "^7.17.12",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
-    "babel-loader": "^8.2.5",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "^6.7.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "html-webpack-plugin": "^5.5.0",
-    "node-polyfill-webpack-plugin": "^1.1.4",
-    "sass": "^1.72.0",
-    "sass-loader": "^14.1.1",
     "standard": "^17.0.0",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.3.3",
-    "url-loader": "^4.1.1",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.9.2",
-    "webpack-merge": "^5.8.0"
+    "typescript": "^5.3.3"
   }
 }
