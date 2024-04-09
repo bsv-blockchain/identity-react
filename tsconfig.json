@@ -13,7 +13,6 @@
     "noImplicitAny": false,
     "declaration": true,
     "declarationMap": true,
-    "declarationDir": "./dist/src/types",
     "rootDir": ".",
     "composite": true,
     "noImplicitOverride": true,
