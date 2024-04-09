@@ -17,7 +17,7 @@
     "@types/node": "^20.11.0",
     "metanet-react-prompt": "^0.1.2",
     "react": "^18.2.0",
-    "uhrp-react": "^0.2.17",
+    "uhrp-react": "^0.2.18",
     "use-async-effect": "^2.2.7",
     "zustand": "^4.5.0"
   },
