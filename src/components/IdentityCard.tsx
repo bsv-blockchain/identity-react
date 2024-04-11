@@ -6,7 +6,8 @@ import { Identity, IdentityProps, SigniaResult } from '../types/metanet-identity
 
 const knownCertificateTypes = {
   identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
-  socialCert: '2TgqRC35B1zehGmB21xveZNc7i5iqHc0uxMb+1NMPW4='
+  discordCert: '2TgqRC35B1zehGmB21xveZNc7i5iqHc0uxMb+1NMPW4=',
+  phoneCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
 }
 
 const IdentityCard: React.FC<IdentityProps> = ({
@@ -19,7 +20,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
     profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
   } as Identity)
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         // Resolve a Signia verified identity from a counterparty
         const matchingIdentities = await discoverByIdentityKey({
@@ -38,7 +39,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
               name = `${firstName} ${lastName}`
               break
             }
-            case knownCertificateTypes.socialCert: {
+            case knownCertificateTypes.discordCert || knownCertificateTypes.phoneCert: {
               const { userName, email, phoneNumber } = selectedIdentity.decryptedFields
               name = userName || email || phoneNumber || name
               break
