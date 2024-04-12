@@ -1,13 +1,31 @@
-import { Avatar, Badge, Box, Card, CardContent, Icon, Tooltip, Typography } from '@mui/material'
+import { Avatar, Badge, Box, CardContent, Icon, Tooltip, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
 import { Identity, IdentityProps, SigniaResult } from '../types/metanet-identity-types'
+import PhoneIcon from '@mui/icons-material/Phone'
+// import EmailIcon from '@mui/icons-material/Email'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 
 const knownCertificateTypes = {
   identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
   discordCert: '2TgqRC35B1zehGmB21xveZNc7i5iqHc0uxMb+1NMPW4=',
-  phoneCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
+  phoneCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A=',
+  // emailCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
+}
+
+const getIconForType = (certificateType) => {
+  switch (certificateType) {
+    case knownCertificateTypes.phoneCert:
+      return <PhoneIcon style={{ fontSize: 40 }} />;
+    // case knownCertificateTypes.emailCert:
+    //   return <EmailIcon style={{ fontSize: 40 }} />;
+    // case knownCertificateTypes.xCert:
+    //   return <AccountCircleIcon style={{ fontSize: 40 }} />;
+    // Add other cases as needed
+    default:
+      return <AccountCircleIcon style={{ fontSize: 40 }} />; // Default icon
+  }
 }
 
 const IdentityCard: React.FC<IdentityProps> = ({
@@ -20,7 +38,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
     profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
   } as Identity)
   useEffect(() => {
-    ; (async () => {
+    (async () => {
       try {
         // Resolve a Signia verified identity from a counterparty
         const matchingIdentities = await discoverByIdentityKey({
@@ -53,7 +71,8 @@ const IdentityCard: React.FC<IdentityProps> = ({
             name,
             profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
             identityKey: selectedIdentity.subject,
-            certifier: selectedIdentity.certifier
+            certifier: selectedIdentity.certifier,
+            certificateType: selectedIdentity.type
           })
         }
       } catch (e) {
@@ -111,12 +130,16 @@ const IdentityCard: React.FC<IdentityProps> = ({
           }
         >
           <Avatar alt={resolvedIdentity.name} sx={{ width: '2.5em', height: '2.5em' }}>
-            <Img
-              style={{ width: '100%', height: 'auto' }}
-              src={resolvedIdentity.profilePhoto}
-              confederacyHost={confederacyHost}
-              loading={undefined}
-            />
+            {resolvedIdentity.profilePhoto ? (
+              <Img
+                style={{ width: '100%', height: 'auto' }}
+                src={resolvedIdentity.profilePhoto}
+                confederacyHost={confederacyHost}
+                loading="lazy"
+              />
+            ) : (
+              getIconForType(resolvedIdentity.certificateType)
+            )}
           </Avatar>
         </Badge>
       </Tooltip>
