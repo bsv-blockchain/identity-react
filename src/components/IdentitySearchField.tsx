@@ -20,6 +20,7 @@ import {
 import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
+import { getIconForType } from './IdentityCard'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -244,12 +245,16 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                       }
                     >
                       <Avatar>
-                        <Img
-                          style={{ width: '100%', height: 'auto' }}
-                          src={option.profilePhoto}
-                          confederacyHost={confederacyHost}
-                          loading={undefined}
-                        />
+                        {option.profilePhoto ? (
+                          <Img
+                            style={{ width: '100%', height: 'auto' }}
+                            src={option.profilePhoto}
+                            confederacyHost={confederacyHost}
+                            loading={undefined}
+                          />
+                        ) : (
+                          getIconForType(option.certificateType)
+                        )}
                       </Avatar>
                     </Badge>
                   </Tooltip>

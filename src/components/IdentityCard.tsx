@@ -14,7 +14,8 @@ const knownCertificateTypes = {
   // emailCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
 }
 
-const getIconForType = (certificateType) => {
+// TODO: move to helper
+export const getIconForType = (certificateType) => {
   switch (certificateType) {
     case knownCertificateTypes.phoneCert:
       return <PhoneIcon style={{ fontSize: 40 }} />;
