@@ -39,7 +39,8 @@ const IdentityCard: React.FC<IdentityProps> = ({
               name = `${firstName} ${lastName}`
               break
             }
-            case knownCertificateTypes.discordCert || knownCertificateTypes.phoneCert: {
+            case knownCertificateTypes.phoneCert:
+            case knownCertificateTypes.discordCert: {
               const { userName, email, phoneNumber } = selectedIdentity.decryptedFields
               name = userName || email || phoneNumber || name
               break
