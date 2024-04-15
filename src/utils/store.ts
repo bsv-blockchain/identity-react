@@ -42,7 +42,8 @@ export const useStore = create<IdentityStore>((set) => ({
         name: nameParts.join(' '),
         profilePhoto: x.decryptedFields.profilePhoto,
         identityKey: x.subject,
-        certifier: x.certifier
+        certifier: x.certifier,
+        certificateType: x.type
       }
     })
     setIsLoading(false)
