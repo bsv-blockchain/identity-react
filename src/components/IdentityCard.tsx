@@ -136,7 +136,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
                 style={{ width: '100%', height: 'auto' }}
                 src={resolvedIdentity.profilePhoto}
                 confederacyHost={confederacyHost}
-                loading="lazy"
+                loading={undefined}
               />
             ) : (
               getIconForType(resolvedIdentity.certificateType)

@@ -26,14 +26,16 @@ export interface IdentitySearchFieldProps {
   theme?: Theme
   font?: string
   confederacyHost?: string
-  onIdentitySelected?: (selectedIdentity: Identity) => void
+  onIdentitySelected?: (selectedIdentity: Identity) => void,
+  appName?: string
 }
 
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme: themeProp,
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
-  onIdentitySelected = (selectedIdentity: Identity) => { }
+  onIdentitySelected = (selectedIdentity: Identity) => { },
+  appName = 'This app'
 }) => {
   // Fallback to the default theme from the context
   const theme = themeProp || useTheme()!
@@ -97,7 +99,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
         padding: '20px'
       }}
     >
-      <NoMncModal open={isMncMissing} onClose={() => setIsMncMissing(false)} />
+      <NoMncModal appName={appName} open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           position: 'relative',
