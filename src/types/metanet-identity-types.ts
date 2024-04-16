@@ -36,6 +36,6 @@ export interface Identity {
   name: string
   profilePhoto: string
   identityKey: string
-  certifier: Certifier,
+  certifier?: Certifier,
   certificateType?: string
 }

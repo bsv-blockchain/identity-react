@@ -13,11 +13,14 @@ export const useStore = create<IdentityStore>((set) => ({
     setIsLoading(true)
     let results
     // Figure out if the query is by IdentityKey
+    console.log('checkl')
     if (isIdentityKey(query)) {
+      console.log('match')
       results = await discoverByIdentityKey({
         identityKey: query,
         description: 'Discover MetaNet Identity'
       })
+      console.log(results)
     } else {
       results = await discoverByAttributes({
         attributes: {
@@ -25,6 +28,7 @@ export const useStore = create<IdentityStore>((set) => ({
         },
         description: 'Discover MetaNet Identity'
       })
+      console.log(results)
     }
 
     const matchingIdentities = (results as SigniaResult[]).map((x: SigniaResult) => {
@@ -48,6 +52,18 @@ export const useStore = create<IdentityStore>((set) => ({
     })
     setIsLoading(false)
 
+    // console.log('id', matchingIdentities)
+    // if ((!matchingIdentities || matchingIdentities.length === 0) && isIdentityKey(query)) {
+    //   set({
+    //     identities: [{
+    //       name: 'Stranger',
+    //       profilePhoto: '',
+    //       identityKey: query,
+    //       certificateType: 'Unknown'
+    //     }]
+    //   })
+    // } else {
     set({ identities: matchingIdentities })
+    // }
   },
 }))

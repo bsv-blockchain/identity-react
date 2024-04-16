@@ -45,12 +45,30 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
-  const [isMncMissing, setIsMncMissing] = useState(false) // Added state to control NoMncModal visibility
+  const [isMncMissing, setIsMncMissing] = useState(false)
 
-  const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
-    setInputValue(newInputValue)
-    setIsSelecting(false)
+  const handleInputChange = async (_event: React.SyntheticEvent, newInputValue: string) => {
+    console.log('Event type:', _event.type)
+    console.log('Change:', newInputValue)
+
+    if (isSelecting) {
+      setIsSelecting(false) //?
+    }
     setSelectedIdentity({} as Identity)
+    setInputValue(newInputValue)
+
+    // Fetch identities if not selecting
+    if (newInputValue && !isSelecting) {
+      setIsLoading(true)
+      try {
+        await fetchIdentities(newInputValue, setIsLoading)
+        setIsMncMissing(false)
+      } catch (error) {
+        // Handle error
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
     // TODO: Consider using cached results
     // if (identities.some(identity =>
@@ -67,26 +85,28 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     }
   }
 
-  useAsyncEffect(async () => {
-    // If inputValue changes and we are not selecting, fetch the identity information
-    try {
-      if (inputValue && !isSelecting) {
-        await fetchIdentities(inputValue, setIsLoading)
-        setIsMncMissing(false)
-      }
-    } catch (error) {
-      setIsLoading(false)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      if (error.code === 'ERR_NO_METANET_IDENTITY') {
-        setIsMncMissing(true)
-        console.log(error)
-      } else {
-        // Handle other errors or rethrow them
-        console.error(error)
-      }
-    }
-  }, [inputValue, isSelecting])
+  // useAsyncEffect(async () => {
+  //   // If inputValue changes and we are not selecting, fetch the identity information
+  //   console.log('inputValue', inputValue)
+  //   try {
+  //     if (inputValue && !isSelecting) {
+  //       await fetchIdentities(inputValue, setIsLoading)
+  //       setIsMncMissing(false)
+  //       console.log('ids', identities)
+  //     }
+  //   } catch (error) {
+  //     setIsLoading(false)
+  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //     // @ts-expect-error
+  //     if (error.code === 'ERR_NO_METANET_IDENTITY') {
+  //       setIsMncMissing(true)
+  //       console.log(error)
+  //     } else {
+  //       // Handle other errors or rethrow them
+  //       console.error(error)
+  //     }
+  //   }
+  // }, [inputValue, isSelecting])
 
   return (
     <Box
@@ -113,6 +133,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           inputValue={inputValue}
           onInputChange={handleInputChange}
           onChange={handleSelect}
+          open={true}
           getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
           renderInput={params => {
             return (
@@ -207,7 +228,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           )}
           renderOption={(props, option: Identity) => {
             return (
-              <ListItem {...props} key={`${option.identityKey}${option.certifier.publicKey}`}>
+              <ListItem {...props} key={`${option.name}${option.identityKey}${option.certifier ? option.certifier.publicKey : 'noCertifier'}`}>
                 <ListItemIcon>
                   <Tooltip
                     title={
