@@ -9,8 +9,8 @@ export interface DecryptedField {
   phoneNumber?: string
 }
 export interface Certifier {
-  publicKey: string,
-  icon: string,
+  publicKey: string
+  icon: string
   name: string
 }
 export interface SigniaResult {
@@ -22,20 +22,24 @@ export interface SigniaResult {
 }
 
 export interface IdentityProps {
-  identityKey: string,
-  confederacyHost?: string,
-  themeMode?: 'light' | 'dark'
+  identityKey: string
+  confederacyHost?: string
+  themeMode?: "light" | "dark"
 }
 
 export interface IdentityStore {
   identities: Identity[]
-  fetchIdentities: (query: string, setIsLoading: Dispatch<SetStateAction<boolean>>) => Promise<void>
+  fetchIdentities: (
+    query: string,
+    setIsLoading: Dispatch<SetStateAction<boolean>>
+  ) => Promise<void>
 }
 
 export interface Identity {
   name: string
   profilePhoto: string
   identityKey: string
-  certifier: Certifier,
+  certifier: Certifier
   certificateType?: string
+  decryptedFields?: any
 }

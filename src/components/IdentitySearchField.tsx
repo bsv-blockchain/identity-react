@@ -1,286 +1,378 @@
-import React, { useEffect, useState } from 'react'
-import { Identity } from '../types/metanet-identity-types'
-import { useStore } from '../utils/store'
-import { Img } from 'uhrp-react'
-import SearchIcon from '@mui/icons-material/Search'
-import {
-  Autocomplete,
-  Avatar,
-  Badge,
-  Box,
-  Icon,
-  LinearProgress,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-  Tooltip,
-  Typography
-} from '@mui/material'
-import { Theme, useTheme } from '@mui/material/styles'
-import useAsyncEffect from 'use-async-effect'
-import { NoMncModal } from 'metanet-react-prompt'
-import { getIconForType } from './IdentityCard'
+import { NoMncModal } from "metanet-react-prompt"
+import { useEffect, useState } from "react"
+import { FaPhoneAlt, FaSearch } from "react-icons/fa"
+import { FaDiscord, FaXmark } from "react-icons/fa6"
+import { Identity } from "../types"
+import { fetchIdentities, sleep } from "../utils/identityUtils"
+import { truncateText } from "../utils/textUtils"
 
 export interface IdentitySearchFieldProps {
-  theme?: Theme
   font?: string
   confederacyHost?: string
-  onIdentitySelected?: (selectedIdentity: Identity) => void,
+  onIdentitySelected?: (selectedIdentity: Identity) => void
   appName?: string
 }
 
-const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
-  theme: themeProp,
-  font = '"Roboto Mono", monospace',
-  confederacyHost = 'https://confederacy.babbage.systems',
-  onIdentitySelected = (selectedIdentity: Identity) => { },
-  appName = 'This app'
+const IdentitySearchField2 = ({
+  isDarkMode = false,
+  confederacyHost = "https://confederacy.babbage.systems",
+  onIdentitySelected = (selectedIdentity: Identity) => {},
+  appName = "My App",
 }) => {
-  // Fallback to the default theme from the context
-  const theme = themeProp || useTheme()!
+  // State & constants ================================================== //
 
-  const [inputValue, setInputValue] = useState('')
-  const { identities, fetchIdentities } = useStore()
-  const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSelecting, setIsSelecting] = useState(false)
+  const [identities, setIdentities] = useState<Identity[]>([]) as any // array of Identity objects
+  const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(
+    null
+  ) // stores selected Identity
+  const [identitiesDropDownVisible, setIdentitiesDropdownVisible] = useState(
+    false
+  )
+  const [inputValue, setInputValue] = useState<string | number>("") // text input
+  const [isInputFocused, setIsInputFocused] = useState(false) // tracks whether the input is focused
+  const [isContainerHovered, setIsContainerHovered] = useState(false) // tracks whether the container component is hovered
+  const [clearButtonHovered, setClearButtonHovered] = useState(false) // tracks whether the text clear button is hovered
+  const [hoveredIdentityIndex, setHoveredIdentityIndex] = useState<
+    number | null
+  >(null) // tracks which item in the list is hovered
   const [isMncMissing, setIsMncMissing] = useState(false) // Added state to control NoMncModal visibility
+  const [hasIdentitySelected, setHasIdentitySelected] = useState(false)
 
-  const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
-    setInputValue(newInputValue)
-    setIsSelecting(false)
-    setSelectedIdentity({} as Identity)
+  const accentColorRed = "rgb(232,83,73)"
 
-    // TODO: Consider using cached results
-    // if (identities.some(identity =>
-    //   identity.name.split(' ').some(word => word.toLowerCase().startsWith(newInputValue.toLowerCase()))
-    // ) === false) {
-    // }
-  }
+  // Loading state and CSS animation =================================== //
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSelect = (_event: React.SyntheticEvent, newValue: Identity | string | null) => {
-    if (newValue && typeof newValue !== 'string') {
-      setIsSelecting(true)
-      setSelectedIdentity(newValue)
-      onIdentitySelected(newValue)
-    }
-  }
-
-  useAsyncEffect(async () => {
-    // If inputValue changes and we are not selecting, fetch the identity information
-    try {
-      if (inputValue && !isSelecting) {
-        await fetchIdentities(inputValue, setIsLoading)
-        setIsMncMissing(false)
+  useEffect(() => {
+    const styleSheet = document.createElement("style")
+    styleSheet.type = "text/css"
+    styleSheet.innerText = `
+      @keyframes scanningAnimation {
+        0% {
+          left: 0%;
+          width: 0%;
+          transform: translateX(0);
+        }
+        25% {
+          left: 25%;
+          width: 33%;
+          transform: translateX(-33%);
+        }
+        50% {
+          left: 50%;
+          width: 50%;
+          transform: translateX(-50%);
+        }
+        67% {
+          left: 67%;
+          width: 33%;
+          
+        }
+        100% {
+          left: 100%;
+          width: 0%;
+          
+        }
       }
-    } catch (error) {
+    `
+    document.head.appendChild(styleSheet)
+
+    return () => {
+      document.head.removeChild(styleSheet)
+    }
+  }, [])
+
+  // Fetching and debounce ============================================= //
+
+  const fetchDebounceMs = 300
+
+  useEffect(() => {
+    if (inputValue === "") {
+      setIdentities([])
       setIsLoading(false)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      if (error.code === 'ERR_NO_METANET_IDENTITY') {
-        setIsMncMissing(true)
-        console.log(error)
-      } else {
-        // Handle other errors or rethrow them
-        console.error(error)
-      }
+      return
     }
-  }, [inputValue, isSelecting])
+
+    if (!hasIdentitySelected) {
+      const debouncedFetchIdentities = setTimeout(async () => {
+        setIsLoading(true)
+        try {
+          const identityResults = await fetchIdentities(inputValue.toString())
+          setIdentities(identityResults)
+          setIdentitiesDropdownVisible(true)
+          setIsLoading(false)
+        } catch (e) {
+          setIsLoading(false)
+          console.error("Error fetching identities: ", e)
+          //@ts-ignore
+          if (e.code === "ERR_NO_METANET_IDENTITY") {
+            setIsMncMissing(true)
+          }
+        }
+      }, fetchDebounceMs)
+
+      return () => clearTimeout(debouncedFetchIdentities)
+    }
+  }, [inputValue, hasIdentitySelected])
+
+  // Render =========================================================== //
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontFamily: font,
-        width: '100%',
-        padding: '20px'
-      }}
-    >
-      <NoMncModal appName={appName} open={isMncMissing} onClose={() => setIsMncMissing(false)} />
-      <Box
-        sx={{
-          position: 'relative',
-          width: 'fit-content',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+    <div>
+      <NoMncModal
+        appName={appName}
+        open={isMncMissing}
+        onClose={() => setIsMncMissing(false)}
+      />
+      <div
+        style={{
+          width: "300px",
+          height: "56px",
+          background: "white",
+          position: "relative",
+          filter: isInputFocused
+            ? "brightness(100%)"
+            : isContainerHovered
+            ? "brightness(95%)"
+            : "brightness(100%)",
         }}
+        onMouseEnter={() => setIsContainerHovered(true)}
+        onMouseLeave={() => setIsContainerHovered(false)}
       >
-        <Autocomplete
-          freeSolo
-          options={identities}
-          inputValue={inputValue}
-          onInputChange={handleInputChange}
-          onChange={handleSelect}
-          getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
-          renderInput={params => {
-            return (
-              <Box>
-                <TextField
-                  {...params}
-                  label="Search Identity"
-                  variant="filled"
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: selectedIdentity.profilePhoto ? (
-                      <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-                        <Img
-                          style={{ width: '100%', height: 'auto' }}
-                          src={(selectedIdentity as Identity).profilePhoto}
-                          confederacyHost={confederacyHost}
-                          loading={undefined}
-                        />
-                      </Avatar>
-                    ) : (
-                      <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
-                    ),
-                    style: {
-                      color:
-                        theme.palette.mode === 'light'
-                          ? theme.palette.common.black
-                          : theme.palette.common.white
-                    }
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      // borderRadius: '10px',
-                    },
-                    '& .MuiFilledInput-root': {
-                      backgroundColor:
-                        theme.palette.mode === 'light'
-                          ? theme.palette.common.white
-                          : theme.palette.grey[900]
-                    },
-                    '& label': {
-                      // Normal state
-                      color:
-                        theme.palette.mode === 'light'
-                          ? theme.palette.common.black
-                          : theme.palette.common.white
-                    },
-                    '& label.Mui-focused': {
-                      // Focused state
-                      color:
-                        theme.palette.mode === 'light'
-                          ? theme.palette.common.black
-                          : theme.palette.common.white
-                    },
-                    '& .MuiFilledInput-underline:after': {
-                      borderBottomColor: '#FC433F' // your desired color here
-                    }
-                  }}
-                />
-                {isLoading && (
-                  <LinearProgress
-                    sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: '#FC433F' // your desired solid color
-                      }
-                    }}
-                  />
-                )}
-              </Box>
-            )
-          }}
-          PaperComponent={({ children }) => (
-            <Box
-              sx={{
-                backgroundColor:
-                  theme.palette.mode === 'light'
-                    ? theme.palette.common.white
-                    : theme.palette.grey[900],
-                color:
-                  theme.palette.mode === 'light'
-                    ? theme.palette.common.black
-                    : theme.palette.common.white,
-                '& ul': { padding: 0 }
-              }}
-            >
-              {children}
-            </Box>
-          )}
-          renderOption={(props, option: Identity) => {
-            return (
-              <ListItem {...props} key={`${option.identityKey}${option.certifier.publicKey}`}>
-                <ListItemIcon>
-                  <Tooltip
-                    title={
-                      option.certifier
-                        ? `Certified by ${option.certifier.name}`
-                        : 'Unknown Certifier!'
-                    }
-                    placement="right"
-                  >
-                    <Badge
-                      overlap="circular"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      badgeContent={
-                        <Icon
-                          style={{
-                            width: '20px',
-                            height: '20px',
-                            backgroundColor: 'white',
-                            borderRadius: '20%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Img
-                            style={{
-                              width: '95%',
-                              height: '95%',
-                              objectFit: 'cover',
-                              borderRadius: '20%'
-                            }}
-                            src={option.certifier ? option.certifier.icon : ''}
-                            confederacyHost={confederacyHost}
-                            loading={undefined}
-                          />
-                        </Icon>
-                      }
-                    >
-                      <Avatar>
-                        {option.profilePhoto ? (
-                          <Img
-                            style={{ width: '100%', height: 'auto' }}
-                            src={option.profilePhoto}
-                            confederacyHost={confederacyHost}
-                            loading={undefined}
-                          />
-                        ) : (
-                          getIconForType(option.certificateType)
-                        )}
-                      </Avatar>
-                    </Badge>
-                  </Tooltip>
-                </ListItemIcon>
-                <ListItemText
-                  primary={option.name}
-                  secondary={
-                    <Typography variant="body2" style={{ color: 'gray' }}>
-                      {`${option.identityKey.slice(0, 10)}...`}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            )
-          }}
+        <div
           style={{
-            minWidth: '300px',
-            backgroundColor:
-              theme.palette.mode === 'light' ? theme.palette.common.white : theme.palette.grey[900]
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            paddingTop: ".15rem",
+            paddingLeft: ".7rem",
+          }}
+        >
+          {/* label */}
+          <label
+            style={{
+              padding: "0",
+              margin: "0",
+              color: "rgba(0,0,0,1)",
+              fontSize: "12px",
+              fontWeight: "400",
+              fontFamily: "system-ui, Roboto, Helvetica, Arial, sans-serif",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Search Identity
+          </label>
+          {/* magnifying glass icon */}
+          <div style={{ width: ".5rem !important" }}>
+            {selectedIdentity ? (
+              <div>{getIdentityImage(selectedIdentity, "1.4rem")}</div>
+            ) : (
+              <>
+                {/* <svg style={{ fill: accentColorRed, height: "100%" }}>
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path>
+              </svg> */}
+                <FaSearch style={{ color: accentColorRed }} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* text input */}
+        <input
+          style={{
+            border: "none",
+            outline: "none",
+            position: "absolute",
+            left: "14%",
+            top: "40%",
+            width: "75%",
+            height: "50%",
+            fontSize: "16px",
+          }}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            setSelectedIdentity(null)
+          }}
+          onFocus={() => {
+            setIsInputFocused(true)
+          }}
+          onBlur={() => {
+            setIsInputFocused(false)
           }}
         />
-      </Box>
-    </Box>
+
+        {/* clear input button */}
+        {inputValue !== "" && (
+          <>
+            <div
+              style={{
+                position: "absolute",
+                right: "5%",
+                top: "35%",
+                cursor: "pointer",
+                opacity: "0.5",
+              }}
+              onClick={() => {
+                setInputValue("")
+                setSelectedIdentity(null)
+              }}
+              onMouseEnter={() => {
+                setClearButtonHovered(true)
+              }}
+              onMouseLeave={() => {
+                setClearButtonHovered(false)
+              }}
+            >
+              <div>
+                <FaXmark
+                  style={{
+                    color: "black",
+                  }}
+                />
+                <div
+                  style={{
+                    width: "1.75rem",
+                    height: "1.75rem",
+                    borderRadius: "100%",
+                    background: "gray",
+                    opacity: "0.2",
+                    position: "absolute",
+                    color: "red",
+                    top: "40%",
+                    left: "50%",
+                    transform: "translate(-50%,-50%)",
+                    zIndex: "-1",
+                  }}
+                  hidden={!clearButtonHovered}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Animated red line */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: isLoading ? "0" : "50%", // Start from 0 when loading, otherwise centered
+            transform: isLoading ? "none" : "translateX(-50%)",
+            height: "2px",
+            backgroundColor: accentColorRed,
+            width: isInputFocused ? (isLoading ? "50%" : "100%") : "0", // Dynamic width based on state
+            transition: isLoading ? "none" : "width 0.3s ease", // Disable transitions when loading
+            animation: isLoading
+              ? "scanningAnimation 1s infinite linear"
+              : "none",
+          }}
+        />
+      </div>
+
+      {/* identites dropdown list */}
+      {identities.length > 0 && inputValue !== "" && identitiesDropDownVisible && (
+        <>
+          {identities.map((identity, index) => {
+            return (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  border: "1px solid #EEE",
+                  padding: ".5rem",
+                  background: "white",
+                  filter:
+                    hoveredIdentityIndex === index
+                      ? "brightness(95%)"
+                      : "brightness(100%)",
+                  cursor: "pointer",
+                  color: "black",
+                  overflow: "hidden",
+                }}
+                onMouseEnter={() => {
+                  setHoveredIdentityIndex(index)
+                }}
+                onMouseLeave={() => {
+                  setHoveredIdentityIndex(null)
+                }}
+                onClick={() => {
+                  setInputValue(
+                    identity.decryptedFields.userName ||
+                      identity.decryptedFields.phoneNumber
+                  )
+                  setIdentitiesDropdownVisible(false)
+                  setSelectedIdentity(identity)
+                  onIdentitySelected(identity)
+                }}
+              >
+                {/* icon image based on SocialCert service */}
+                {getIdentityImage(identity)}
+
+                {/* username or phone number label */}
+                <label
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    cursor: "pointer",
+                  }}
+                >
+                  {identity.decryptedFields.userName ||
+                    identity.decryptedFields.phoneNumber}
+
+                  {/* username or phone number label */}
+                  <label
+                    style={{
+                      fontSize: ".75rem",
+                      opacity: "0.5",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {truncateText(identity.subject, 10)}
+                  </label>
+                </label>
+              </div>
+            )
+          })}
+        </>
+      )}
+    </div>
   )
 }
 
-export default IdentitySearchField
+export default IdentitySearchField2
+
+// takes an identity and returns either a profile image or a social icon
+// Can be passed a scale coefficient that will change its size
+const getIdentityImage = (identity: Identity, size?: string) => {
+  const identityImageStyle = {
+    width: size ? `${size}` : "2rem",
+    height: size ? `${size}` : "2rem",
+    borderRadius: "100%",
+    marginRight: ".5rem",
+    alignSelf: "center",
+    color: "black",
+  }
+
+  // Ensure that decryptedFields is defined. If not, return an empty img tag
+  const identityFields = identity.decryptedFields
+  if (!identityFields) return <img src={""} style={identityImageStyle} /> // Or some fallback UI element
+
+  // Check if profilePhoto exists and doesn't include 'null'
+  if (
+    identityFields.profilePhoto &&
+    !identityFields.profilePhoto.includes("null")
+  ) {
+    return <img src={identityFields.profilePhoto} style={identityImageStyle} />
+  } else if (identityFields.phoneNumber) {
+    // If a phone number exists, return the phone icon
+    return <FaPhoneAlt style={identityImageStyle} />
+  } else if (
+    identityFields.profilePhoto &&
+    identityFields.profilePhoto.includes("discord")
+  ) {
+    // Check both if profilePhoto exists and includes 'discord'
+    return <FaDiscord style={identityImageStyle} />
+  }
+  // Handle cases where none of the conditions are met
+  return null // Or some other fallback UI element
+}
