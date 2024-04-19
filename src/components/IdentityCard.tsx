@@ -13,14 +13,13 @@ import { getCertifierToolTip, knownCertificateTypes } from '../utils/identityUti
 export const getIconForType = (certificateType) => {
   switch (certificateType) {
     case knownCertificateTypes.phoneCert:
-      return <PhoneIcon style={{ fontSize: 40 }} />;
+      return <PhoneIcon style={{ fontSize: 40 }} />
     case knownCertificateTypes.emailCert:
-      return <EmailIcon style={{ fontSize: 40 }} />;
+      return <EmailIcon style={{ fontSize: 40 }} />
     case knownCertificateTypes.xCert:
-      return <XIcon style={{ fontSize: 40 }} />;
-    // Add other cases as needed
+      return <XIcon style={{ fontSize: 40 }} />
     default:
-      return <AccountCircleIcon style={{ fontSize: 40 }} />; // Default icon
+      return <AccountCircleIcon style={{ fontSize: 40 }} />
   }
 }
 

@@ -46,6 +46,8 @@ export const getCertifierToolTip = (certifier: Certifier, certificateType: strin
       return `X (Twitter) account certified by ${certifier.name}`
     case knownCertificateTypes.phoneCert:
       return `Phone number certified by ${certifier.name}`
+    case knownCertificateTypes.emailCert:
+      return `Email address certified by ${certifier.name}`
     default:
       return `Certified by ${certifier.name}`
   }
