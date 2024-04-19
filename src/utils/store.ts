@@ -1,11 +1,7 @@
 import { create } from 'zustand'
 import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk-ts'
 import { IdentityStore, SigniaResult } from '../types/metanet-identity-types'
-
-const isIdentityKey = (key) => {
-  const regex = /^(02|03|04)[0-9a-fA-F]{64}$/
-  return regex.test(key)
-}
+import { isIdentityKey } from './identityUtils'
 
 export const useStore = create<IdentityStore>((set) => ({
   identities: [],

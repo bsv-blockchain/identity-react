@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Identity } from '../types/metanet-identity-types'
 import { useStore } from '../utils/store'
 import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
+import WarningIcon from '@mui/icons-material/Warning';
 import {
   Autocomplete,
   Avatar,
@@ -15,12 +16,14 @@ import {
   ListItemText,
   TextField,
   Tooltip,
-  Typography
+  Typography,
+  createFilterOptions
 } from '@mui/material'
 import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { getIconForType } from './IdentityCard'
+import { isIdentityKey } from '../utils/identityUtils'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -34,30 +37,27 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme: themeProp,
   font = '"Roboto Mono", monospace',
   confederacyHost = 'https://confederacy.babbage.systems',
-  onIdentitySelected = (selectedIdentity: Identity) => { },
+  onIdentitySelected = (selectedIdentity: Identity) => {
+    // By default the onIdentitySelected handler will just log the selection.
+    console.log('Selected Identity:', selectedIdentity)
+  },
   appName = 'This app'
 }) => {
   // Fallback to the default theme from the context
   const theme = themeProp || useTheme()!
-
+  const defaultFilterOptions = createFilterOptions<Identity>()
   const [inputValue, setInputValue] = useState('')
   const { identities, fetchIdentities } = useStore()
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
-  const [isMncMissing, setIsMncMissing] = useState(false) // Added state to control NoMncModal visibility
+  const [isMncMissing, setIsMncMissing] = useState(false)
 
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
-    console.log('input changed')
+    console.log('input changed', newInputValue)
     setInputValue(newInputValue)
     setIsSelecting(false)
     setSelectedIdentity({} as Identity)
-
-    // TODO: Consider using cached results
-    // if (identities.some(identity =>
-    //   identity.name.split(' ').some(word => word.toLowerCase().startsWith(newInputValue.toLowerCase()))
-    // ) === false) {
-    // }
   }
 
   const handleSelect = (_event: React.SyntheticEvent, newValue: Identity | string | null) => {
@@ -66,6 +66,30 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       setSelectedIdentity(newValue)
       onIdentitySelected(newValue)
     }
+  }
+
+  // Configure the filtering options for the AutoComplete component
+  const filterOptions = (options: Identity[], { inputValue }: { inputValue: string }) => {
+    const filtered = defaultFilterOptions(options, {
+      inputValue,
+      getOptionLabel: function (option): string {
+        return option.name
+      }
+    })
+
+    if (filtered.length === 0 && isIdentityKey(inputValue)) {
+      // Create a new identity with the input as the identity key if no match found
+      const newIdentity: Identity = {
+        name: 'Custom Identity Key',
+        profilePhoto: '',
+        identityKey: inputValue,
+        certificateType: undefined,
+        decryptedFields: undefined,
+      };
+      return [newIdentity];
+    }
+
+    return filtered;
   }
 
   useAsyncEffect(async () => {
@@ -114,7 +138,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           inputValue={inputValue}
           onInputChange={handleInputChange}
           onChange={handleSelect}
-          getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
+          getOptionLabel={(option) => {
+            // Display the name of the identity once selected
+            return typeof option === 'string' ? option : option.name
+          }}
+          filterOptions={filterOptions}
           renderInput={params => {
             return (
               <Box>
@@ -208,7 +236,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           )}
           renderOption={(props, option: Identity) => {
             return (
-              <ListItem {...props} key={`${option.identityKey}${option.certifier.publicKey}`}>
+              <ListItem {...props} key={`${option.identityKey}${option.certifier ? option.certifier.publicKey : option.name}`}>
                 <ListItemIcon>
                   <Tooltip
                     title={
@@ -233,17 +261,22 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          <Img
-                            style={{
-                              width: '95%',
-                              height: '95%',
-                              objectFit: 'cover',
-                              borderRadius: '20%'
-                            }}
-                            src={option.certifier ? option.certifier.icon : ''}
-                            confederacyHost={confederacyHost}
-                            loading={undefined}
-                          />
+                          {option.certifier ?
+                            <Img
+                              style={{
+                                width: '95%',
+                                height: '95%',
+                                objectFit: 'cover',
+                                borderRadius: '20%'
+                              }}
+                              src={option.certifier.icon}
+                              confederacyHost={confederacyHost}
+                              loading={undefined}
+                            />
+                            :
+                            <WarningIcon />
+                          }
+
                         </Icon>
                       }
                     >
