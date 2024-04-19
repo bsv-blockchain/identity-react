@@ -70,12 +70,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
   // Configure the filtering options for the AutoComplete component
   const filterOptions = (options: Identity[], { inputValue }: { inputValue: string }) => {
-    const filtered = defaultFilterOptions(options, {
-      inputValue,
-      getOptionLabel: function (option): string {
-        return option.name
-      }
-    })
+    // Filters users by name or identityKey
+    const filtered = options.filter(option =>
+      option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+      option.identityKey.toLowerCase().includes(inputValue.toLowerCase())
+    );
 
     if (filtered.length === 0 && isIdentityKey(inputValue)) {
       // Create a new identity with the input as the identity key if no match found
