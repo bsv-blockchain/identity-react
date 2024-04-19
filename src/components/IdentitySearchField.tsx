@@ -16,8 +16,7 @@ import {
   ListItemText,
   TextField,
   Tooltip,
-  Typography,
-  createFilterOptions
+  Typography
 } from '@mui/material'
 import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
@@ -45,7 +44,6 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 }) => {
   // Fallback to the default theme from the context
   const theme = themeProp || useTheme()!
-  const defaultFilterOptions = createFilterOptions<Identity>()
   const [inputValue, setInputValue] = useState('')
   const { identities, fetchIdentities } = useStore()
   const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
@@ -76,7 +74,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       option.identityKey.toLowerCase().includes(inputValue.toLowerCase())
     );
 
-    if (filtered.length === 0 && isIdentityKey(inputValue)) {
+    if (filtered.length === 0 && isIdentityKey(inputValue) && !isLoading) {
       // Create a new identity with the input as the identity key if no match found
       const newIdentity: Identity = {
         name: 'Custom Identity Key',
