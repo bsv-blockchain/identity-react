@@ -4,6 +4,7 @@ import { useStore } from '../utils/store'
 import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
 import WarningIcon from '@mui/icons-material/Warning';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import {
   Autocomplete,
   Avatar,
@@ -110,6 +111,29 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     }
   }, [inputValue, isSelecting])
 
+  const getAdornmentForSearch = () => {
+    if (!selectedIdentity.profilePhoto) {
+      return <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
+    } else if (selectedIdentity.profilePhoto.includes('null')) {
+      return <>
+        <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
+          <AccountCircleIcon style={{ fontSize: 40 }} />
+        </Avatar>
+      </>
+    }
+
+    return <>
+      <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
+        <Img
+          style={{ width: '100%', height: 'auto' }}
+          src={selectedIdentity.profilePhoto}
+          confederacyHost={confederacyHost}
+          loading={undefined}
+        />
+      </Avatar>
+    </>
+  }
+
   return (
     <Box
       sx={{
@@ -149,18 +173,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                   variant="filled"
                   InputProps={{
                     ...params.InputProps,
-                    startAdornment: selectedIdentity.profilePhoto ? (
-                      <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-                        <Img
-                          style={{ width: '100%', height: 'auto' }}
-                          src={(selectedIdentity as Identity).profilePhoto}
-                          confederacyHost={confederacyHost}
-                          loading={undefined}
-                        />
-                      </Avatar>
-                    ) : (
-                      <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
-                    ),
+                    startAdornment: getAdornmentForSearch(),
                     style: {
                       color:
                         theme.palette.mode === 'light'

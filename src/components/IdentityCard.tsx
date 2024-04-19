@@ -4,18 +4,18 @@ import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
 import { Identity, IdentityProps, SigniaResult } from '../types/metanet-identity-types'
 import PhoneIcon from '@mui/icons-material/Phone'
-// import EmailIcon from '@mui/icons-material/Email'
+import EmailIcon from '@mui/icons-material/Email'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import XIcon from '@mui/icons-material/X';
-import { knownCertificateTypes } from '../utils/identityUtils'
+import { getCertifierToolTip, knownCertificateTypes } from '../utils/identityUtils'
 
 // TODO: move to helper
 export const getIconForType = (certificateType) => {
   switch (certificateType) {
     case knownCertificateTypes.phoneCert:
       return <PhoneIcon style={{ fontSize: 40 }} />;
-    // case knownCertificateTypes.emailCert:
-    //   return <EmailIcon style={{ fontSize: 40 }} />;
+    case knownCertificateTypes.emailCert:
+      return <EmailIcon style={{ fontSize: 40 }} />;
     case knownCertificateTypes.xCert:
       return <XIcon style={{ fontSize: 40 }} />;
     // Add other cases as needed
@@ -46,22 +46,10 @@ const IdentityCard: React.FC<IdentityProps> = ({
         if (matchingIdentities.length > 0) {
           const selectedIdentity = matchingIdentities[0] as SigniaResult
 
-          let name = 'Unsupported Name'
-          switch (selectedIdentity.type) {
-            case knownCertificateTypes.identiCert: {
-              const { firstName, lastName } = selectedIdentity.decryptedFields
-              name = `${firstName} ${lastName}`
-              break
-            }
-            case knownCertificateTypes.phoneCert:
-            case knownCertificateTypes.discordCert: {
-              const { userName, email, phoneNumber } = selectedIdentity.decryptedFields
-              name = userName || email || phoneNumber || name
-              break
-            }
-            default:
-              break
-          }
+          // Figure out what information we have available to display
+          const { userName, email, phoneNumber, firstName, lastName } = selectedIdentity.decryptedFields
+          const name = firstName && lastName ? `${firstName} ${lastName}`
+            : userName || email || phoneNumber || 'Unsupported Name';
 
           setResolvedIdentity({
             name,
@@ -91,8 +79,8 @@ const IdentityCard: React.FC<IdentityProps> = ({
     >
       <Tooltip
         title={
-          resolvedIdentity.certifier
-            ? `Certified by ${resolvedIdentity.certifier.name}`
+          resolvedIdentity.certifier && resolvedIdentity.certificateType
+            ? getCertifierToolTip(resolvedIdentity.certifier, resolvedIdentity.certificateType)
             : 'Unknown Certifier!'
         }
         placement="right"
@@ -126,7 +114,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
           }
         >
           <Avatar alt={resolvedIdentity.name} sx={{ width: '2.5em', height: '2.5em' }}>
-            {resolvedIdentity.profilePhoto ? (
+            {resolvedIdentity.profilePhoto && !resolvedIdentity.profilePhoto.includes('null') ? (
               <Img
                 style={{ width: '100%', height: 'auto' }}
                 src={resolvedIdentity.profilePhoto}

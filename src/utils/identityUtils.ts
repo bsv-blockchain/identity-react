@@ -1,6 +1,5 @@
 import { discoverByIdentityKey, discoverByAttributes } from "@babbage/sdk-ts"
 import { Certifier } from "../types/metanet-identity-types"
-import PhoneIcon from '@mui/icons-material/Phone'
 
 export const knownCertificateTypes = {
   identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
@@ -8,7 +7,7 @@ export const knownCertificateTypes = {
   phoneCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A=',
   xCert: 'vdDWvftf1H+5+ZprUw123kjHlywH+v20aPQTuXgMpNc=',
   registrant: `YoPsbfR6YQczjzPdHCoGC7nJsOdPQR50+SYqcWpJ0y0=`,
-  // emailCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
+  emailCert: 'exOl3KM0dIJ04EW5pZgbZmPag6MdJXd3/a1enmUU/BA='
 }
 
 export const sleep = (ms: number) => {
