@@ -22,7 +22,7 @@ import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { getIconForType } from './IdentityCard'
-import { isIdentityKey } from '../utils/identityUtils'
+import { getCertifierToolTip, isIdentityKey } from '../utils/identityUtils'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -237,8 +237,8 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                 <ListItemIcon>
                   <Tooltip
                     title={
-                      option.certifier
-                        ? `Certified by ${option.certifier.name}`
+                      option.certifier && option.certificateType
+                        ? getCertifierToolTip(option.certifier, option.certificateType)
                         : 'Unknown Certifier!'
                     }
                     placement="right"
@@ -278,7 +278,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                       }
                     >
                       <Avatar>
-                        {option.profilePhoto ? (
+                        {(option.profilePhoto && option.profilePhoto !== '' && !option.profilePhoto.includes('null')) ? (
                           <Img
                             style={{ width: '100%', height: 'auto' }}
                             src={option.profilePhoto}

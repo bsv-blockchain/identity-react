@@ -7,15 +7,7 @@ import PhoneIcon from '@mui/icons-material/Phone'
 // import EmailIcon from '@mui/icons-material/Email'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import XIcon from '@mui/icons-material/X';
-
-const knownCertificateTypes = {
-  identiCert: 'z40BOInXkI8m7f/wBrv4MJ09bZfzZbTj2fJqCtONqCY=',
-  discordCert: '2TgqRC35B1zehGmB21xveZNc7i5iqHc0uxMb+1NMPW4=',
-  phoneCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A=',
-  xCert: 'vdDWvftf1H+5+ZprUw123kjHlywH+v20aPQTuXgMpNc=',
-  registrant: `YoPsbfR6YQczjzPdHCoGC7nJsOdPQR50+SYqcWpJ0y0=`,
-  // emailCert: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A='
-}
+import { knownCertificateTypes } from '../utils/identityUtils'
 
 // TODO: move to helper
 export const getIconForType = (certificateType) => {
