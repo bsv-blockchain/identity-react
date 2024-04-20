@@ -22,8 +22,8 @@ import {
 import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
-import { getIconForType } from './IdentityCard'
 import { getCertifierToolTip, isIdentityKey } from '../utils/identityUtils'
+import { getIconForType } from './IdentityCard'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -113,12 +113,12 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   }, [inputValue, isSelecting])
 
   const getAdornmentForSearch = () => {
-    if (!selectedIdentity.profilePhoto) {
+    if (!selectedIdentity.name) {
       return <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
-    } else if (selectedIdentity.profilePhoto.includes('null')) {
+    } else if (!selectedIdentity.profilePhoto || selectedIdentity.profilePhoto.includes('null')) {
       return <>
         <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-          <AccountCircleIcon style={{ fontSize: 40 }} />
+          {getIconForType(selectedIdentity.certificateType)}
         </Avatar>
       </>
     }
