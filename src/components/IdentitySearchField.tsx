@@ -55,7 +55,6 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const [isMncMissing, setIsMncMissing] = useState(false)
 
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
-    console.log('input changed', newInputValue)
     setInputValue(newInputValue)
     setIsSelecting(false)
     setSelectedIdentity({} as Identity)
