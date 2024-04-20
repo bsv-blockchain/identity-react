@@ -30,7 +30,8 @@ export interface IdentitySearchFieldProps {
   font?: string
   confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void,
-  appName?: string
+  appName?: string,
+  width?: string
 }
 
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
@@ -41,7 +42,8 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     // By default the onIdentitySelected handler will just log the selection.
     console.log('Selected Identity:', selectedIdentity)
   },
-  appName = 'This app'
+  appName = 'This app',
+  width = '250px'
 }) => {
   // Fallback to the default theme from the context
   const theme = themeProp || useTheme()!
@@ -306,7 +308,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                   </Tooltip>
                 </ListItemIcon>
                 <ListItemText
-                  primary={option.name}
+                  primary={
+                    <Typography noWrap style={{ maxWidth: 'calc(100% - 5px)' }}>
+                      {option.name}
+                    </Typography>
+                  }
                   secondary={
                     <Typography variant="body2" style={{ color: 'gray' }}>
                       {`${option.identityKey.slice(0, 10)}...`}
@@ -317,7 +323,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             )
           }}
           style={{
-            minWidth: '300px',
+            width,
             backgroundColor:
               theme.palette.mode === 'light' ? theme.palette.common.white : theme.palette.grey[900]
           }}

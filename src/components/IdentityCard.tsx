@@ -13,20 +13,20 @@ import { getCertifierToolTip, knownCertificateTypes } from '../utils/identityUti
 export const getIconForType = (certificateType) => {
   switch (certificateType) {
     case knownCertificateTypes.phoneCert:
-      return <PhoneIcon style={{ fontSize: 40 }} />
+      return <PhoneIcon style={{ fontSize: 30 }} />
     case knownCertificateTypes.emailCert:
-      return <EmailIcon style={{ fontSize: 40 }} />
+      return <EmailIcon style={{ fontSize: 30 }} />
     case knownCertificateTypes.xCert:
-      return <XIcon style={{ fontSize: 40 }} />
+      return <XIcon style={{ fontSize: 30 }} />
     default:
-      return <AccountCircleIcon style={{ fontSize: 40 }} />
+      return <AccountCircleIcon style={{ fontSize: 30 }} />
   }
 }
 
 const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
   confederacyHost = 'https://confederacy.babbage.systems',
-  themeMode = 'light'
+  themeMode = 'light' // TODO: Resolve theme discrepancy with search component
 }) => {
   const [resolvedIdentity, setResolvedIdentity] = useState({
     name: 'Stranger',
