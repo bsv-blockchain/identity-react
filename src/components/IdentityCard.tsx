@@ -46,12 +46,12 @@ const IdentityCard: React.FC<IdentityProps> = ({
           const selectedIdentity = matchingIdentities[0] as SigniaResult
 
           // Figure out what information we have available to display
-          const { userName, email, phoneNumber, firstName, lastName } = selectedIdentity.decryptedFields
-          const name = firstName && lastName ? `${firstName} ${lastName}`
-            : userName || email || phoneNumber || 'Unsupported Name';
+          const { userName, name, email, phoneNumber, firstName, lastName } = selectedIdentity.decryptedFields
+          const nameToDisplay = firstName && lastName ? `${firstName} ${lastName}`
+            : name || userName || email || phoneNumber || 'Unsupported Name';
 
           setResolvedIdentity({
-            name,
+            name: nameToDisplay,
             profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
             identityKey: selectedIdentity.subject,
             certifier: selectedIdentity.certifier,

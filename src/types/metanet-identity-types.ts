@@ -5,6 +5,7 @@ export interface DecryptedField {
   firstName?: string
   lastName?: string
   userName?: string
+  name?: string,
   email?: string
   phoneNumber?: string
 }
