@@ -2,36 +2,15 @@ import { Avatar, Badge, Box, CardContent, Icon, Tooltip, Typography } from '@mui
 import { useEffect, useState } from 'react'
 import { discoverByIdentityKey } from '@babbage/sdk-ts'
 import { Img } from 'uhrp-react'
-import { Identity, IdentityProps, SigniaResult } from '../types/metanet-identity-types'
-import PhoneIcon from '@mui/icons-material/Phone'
-import EmailIcon from '@mui/icons-material/Email'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import XIcon from '@mui/icons-material/X';
-import { getCertifierToolTip, knownCertificateTypes } from '../utils/identityUtils'
-
-// TODO: move to helper
-export const getIconForType = (certificateType) => {
-  switch (certificateType) {
-    case knownCertificateTypes.phoneCert:
-      return <PhoneIcon style={{ maxWidth: 'calc(100% - 5px)' }} />
-    case knownCertificateTypes.emailCert:
-      return <EmailIcon style={{ maxWidth: 'calc(100% - 5px)' }} />
-    case knownCertificateTypes.xCert:
-      return <XIcon style={{ maxWidth: 'calc(100% - 5px)' }} />
-    default:
-      return <AccountCircleIcon style={{ maxWidth: 'calc(100% - 5px)' }} />
-  }
-}
+import { IdentityProps, SigniaResult } from '../types/metanet-identity-types'
+import { parseIdentity, defaultIdentity } from 'identinator'
 
 const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
   confederacyHost = 'https://confederacy.babbage.systems',
   themeMode = 'light' // TODO: Resolve theme discrepancy with search component
 }) => {
-  const [resolvedIdentity, setResolvedIdentity] = useState({
-    name: 'Stranger',
-    profilePhoto: 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
-  } as Identity)
+  const [resolvedIdentity, setResolvedIdentity] = useState(defaultIdentity)
   useEffect(() => {
     (async () => {
       try {
@@ -44,19 +23,9 @@ const IdentityCard: React.FC<IdentityProps> = ({
         // Select the first result which is the most trusted
         if (matchingIdentities.length > 0) {
           const selectedIdentity = matchingIdentities[0] as SigniaResult
+          const parsedIdentity = parseIdentity(selectedIdentity)
 
-          // Figure out what information we have available to display
-          const { userName, name, email, phoneNumber, firstName, lastName } = selectedIdentity.decryptedFields
-          const nameToDisplay = firstName && lastName ? `${firstName} ${lastName}`
-            : name || userName || email || phoneNumber || 'Unsupported Name';
-
-          setResolvedIdentity({
-            name: nameToDisplay,
-            profilePhoto: selectedIdentity.decryptedFields.profilePhoto,
-            identityKey: selectedIdentity.subject,
-            certifier: selectedIdentity.certifier,
-            certificateType: selectedIdentity.type
-          })
+          setResolvedIdentity(parsedIdentity)
         }
       } catch (e) {
         console.error(e)
@@ -78,9 +47,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
     >
       <Tooltip
         title={
-          resolvedIdentity.certifier && resolvedIdentity.certificateType
-            ? getCertifierToolTip(resolvedIdentity.certifier, resolvedIdentity.certificateType)
-            : 'Unknown Certifier!'
+          resolvedIdentity.badgeLabel
         }
         placement="right"
       >
@@ -102,9 +69,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
               <Img
                 style={{ width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }}
                 src={
-                  resolvedIdentity.certifier
-                    ? resolvedIdentity.certifier.icon
-                    : 'https://cdn4.iconfinder.com/data/icons/political-elections/50/48-512.png'
+                  resolvedIdentity.badgeIconURL
                 }
                 confederacyHost={confederacyHost}
                 loading={undefined}
@@ -113,16 +78,12 @@ const IdentityCard: React.FC<IdentityProps> = ({
           }
         >
           <Avatar alt={resolvedIdentity.name} sx={{ width: '2.5em', height: '2.5em' }}>
-            {resolvedIdentity.profilePhoto && !resolvedIdentity.profilePhoto.includes('null') ? (
-              <Img
-                style={{ width: '100%', height: 'auto' }}
-                src={resolvedIdentity.profilePhoto}
-                confederacyHost={confederacyHost}
-                loading={undefined}
-              />
-            ) : (
-              getIconForType(resolvedIdentity.certificateType)
-            )}
+            <Img
+              style={{ width: '100%', height: 'auto' }}
+              src={resolvedIdentity.avatarURL}
+              confederacyHost={confederacyHost}
+              loading={undefined}
+            />
           </Avatar>
         </Badge>
       </Tooltip>

@@ -38,9 +38,10 @@ export interface IdentityStore {
 
 export interface Identity {
   name: string
-  profilePhoto: string
+  avatarURL: string
+  abbreviatedKey: string
   identityKey: string
-  certifier?: Certifier
-  certificateType?: string
-  decryptedFields?: any
+  badgeIconURL: string
+  badgeLabel: string
+  badgeClickURL: string
 }

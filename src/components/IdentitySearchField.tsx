@@ -3,8 +3,6 @@ import { Identity } from '../types/metanet-identity-types'
 import { useStore } from '../utils/store'
 import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
-import WarningIcon from '@mui/icons-material/Warning';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import {
   Autocomplete,
   Avatar,
@@ -22,8 +20,8 @@ import {
 import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
-import { getCertifierToolTip, isIdentityKey } from '../utils/identityUtils'
-import { getIconForType } from './IdentityCard'
+import { isIdentityKey } from '../utils/identityUtils'
+import { defaultIdentity } from 'identinator'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -49,7 +47,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const theme = themeProp || useTheme()!
   const [inputValue, setInputValue] = useState('')
   const { identities, fetchIdentities } = useStore()
-  const [selectedIdentity, setSelectedIdentity] = useState({} as Identity)
+  const [selectedIdentity, setSelectedIdentity] = useState(defaultIdentity)
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
   const [isMncMissing, setIsMncMissing] = useState(false)
@@ -79,16 +77,14 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     if (filtered.length === 0 && isIdentityKey(inputValue) && !isLoading) {
       // Create a new identity with the input as the identity key if no match found
       const newIdentity: Identity = {
+        ...defaultIdentity,
         name: 'Custom Identity Key',
-        profilePhoto: '',
-        identityKey: inputValue,
-        certificateType: undefined,
-        decryptedFields: undefined,
-      };
-      return [newIdentity];
+        identityKey: inputValue.substring(0, 10)
+      }
+      return [newIdentity]
     }
 
-    return filtered;
+    return filtered
   }
 
   useAsyncEffect(async () => {
@@ -115,19 +111,13 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const getAdornmentForSearch = () => {
     if (!selectedIdentity.name) {
       return <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
-    } else if (!selectedIdentity.profilePhoto || selectedIdentity.profilePhoto.includes('null')) {
-      return <>
-        <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-          {getIconForType(selectedIdentity.certificateType)}
-        </Avatar>
-      </>
     }
 
     return <>
       <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
         <Img
           style={{ width: '100%', height: 'auto' }}
-          src={selectedIdentity.profilePhoto}
+          src={selectedIdentity.avatarURL}
           confederacyHost={confederacyHost}
           loading={undefined}
         />
@@ -247,13 +237,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           )}
           renderOption={(props, option: Identity) => {
             return (
-              <ListItem {...props} key={`${option.identityKey}${option.certifier ? option.certifier.publicKey : option.name}`}>
+              <ListItem {...props} key={`${option.identityKey}${option.name}${option.badgeLabel}`}>
                 <ListItemIcon>
                   <Tooltip
                     title={
-                      option.certifier && option.certificateType
-                        ? getCertifierToolTip(option.certifier, option.certificateType)
-                        : 'Unknown Certifier!'
+                      option.badgeLabel
                     }
                     placement="right"
                   >
@@ -272,36 +260,27 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          {option.certifier ?
-                            <Img
-                              style={{
-                                width: '95%',
-                                height: '95%',
-                                objectFit: 'cover',
-                                borderRadius: '20%'
-                              }}
-                              src={option.certifier.icon}
-                              confederacyHost={confederacyHost}
-                              loading={undefined}
-                            />
-                            :
-                            <WarningIcon />
-                          }
-
+                          <Img
+                            style={{
+                              width: '95%',
+                              height: '95%',
+                              objectFit: 'cover',
+                              borderRadius: '20%'
+                            }}
+                            src={option.badgeIconURL}
+                            confederacyHost={confederacyHost}
+                            loading={undefined}
+                          />
                         </Icon>
                       }
                     >
                       <Avatar>
-                        {(option.profilePhoto && option.profilePhoto !== '' && !option.profilePhoto.includes('null')) ? (
-                          <Img
-                            style={{ width: '100%', height: 'auto' }}
-                            src={option.profilePhoto}
-                            confederacyHost={confederacyHost}
-                            loading={undefined}
-                          />
-                        ) : (
-                          getIconForType(option.certificateType)
-                        )}
+                        <Img
+                          style={{ width: '100%', height: 'auto' }}
+                          src={option.avatarURL}
+                          confederacyHost={confederacyHost}
+                          loading={undefined}
+                        />
                       </Avatar>
                     </Badge>
                   </Tooltip>

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { discoverByIdentityKey, discoverByAttributes } from '@babbage/sdk-ts'
 import { IdentityStore, SigniaResult } from '../types/metanet-identity-types'
 import { isIdentityKey } from './identityUtils'
+import { parseIdentity } from 'identinator'
 
 export const useStore = create<IdentityStore>((set) => ({
   identities: [],
@@ -23,24 +24,8 @@ export const useStore = create<IdentityStore>((set) => ({
       })
     }
 
-    const matchingIdentities = (results as SigniaResult[]).map((x: SigniaResult) => {
-
-      // Test adding varied name props
-      const nameParts: string[] = []
-      for (const key in x.decryptedFields) {
-        if (key === 'profilePhoto') {
-          continue
-        }
-        nameParts.push(x.decryptedFields[key])
-      }
-
-      return {
-        name: nameParts.join(' '),
-        profilePhoto: x.decryptedFields.profilePhoto,
-        identityKey: x.subject,
-        certifier: x.certifier,
-        certificateType: x.type
-      }
+    const matchingIdentities = (results as SigniaResult[]).map((result: SigniaResult) => {
+      return parseIdentity(result)
     })
     setIsLoading(false)
 
