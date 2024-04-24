@@ -109,7 +109,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   }, [inputValue, isSelecting])
 
   const getAdornmentForSearch = () => {
-    if (!selectedIdentity.name) {
+    if (!selectedIdentity.name || selectedIdentity.name === defaultIdentity.name) {
       return <SearchIcon sx={{ color: '#FC433F', marginRight: 1 }} />
     }
 
