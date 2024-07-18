@@ -19,7 +19,7 @@
     "metanet-react-prompt": "^0.1.28",
     "react": "^18.2.0",
     "react-icons": "^5.1.0",
-    "uhrp-react": "^0.2.33",
+    "uhrp-react": "^0.2.35",
     "use-async-effect": "^2.2.7",
     "zustand": "^4.5.0"
   },
