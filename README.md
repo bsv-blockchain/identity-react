@@ -1,18 +1,18 @@
-# metanet-identity-react
+# identity-react
 
 React components for resolving identity information on the MetaNet.
 
-The code is hosted [on GitHub](https://github.com/p2ppsr/metanet-identity-react) and the package is available [through NPM](https://www.npmjs.com/package/metanet-identity-react).
+The code is hosted [on GitHub](https://github.com/bitcoin-sv/identity-react) and the package is available [through NPM](https://www.npmjs.com/package/@bsv/identity-react).
 
 ## Installation
 
-    npm i metanet-identity-react
+    npm install @bsv/identity-react
 
 ## Example Usage
 
 ```ts
 import React, { useState } from 'react'
-import { IdentitySearchField, Identity } from 'metanet-identity-react'
+import { IdentitySearchField, Identity } from '@bsv/identity-react'
 
 const IdentityDisplay: React.FC = () => {
   const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(null)
@@ -37,7 +37,7 @@ const IdentityDisplay: React.FC = () => {
 ## Example Headless Usage (useIdentitySearch Hook)
 
 ```ts
-import { useIdentitySearch } from "metanet-identity-react"
+import { useIdentitySearch } from "@bsv/identity-react"
 
 const App = () => {
   
