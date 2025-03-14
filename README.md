@@ -1,13 +1,12 @@
-# identity-react
+# Identity React Components
 
-React components for resolving identity information on the MetaNet.
-
-The code is hosted [on GitHub](https://github.com/bitcoin-sv/identity-react) and the package is available [through NPM](https://www.npmjs.com/package/@bsv/identity-react).
+A library of reusable React components for displaying and searching identity information on the BSV Blockchain.
 
 ## Installation
 
-    npm install @bsv/identity-react
-
+```bash
+npm install @bsv/identity-react
+```
 ## Example Usage
 
 ```ts
