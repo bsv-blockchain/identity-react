@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Identity } from '../types/metanet-identity-types'
 import { useStore } from '../utils/store'
-import { Img } from 'uhrp-react'
+// import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
 import {
   Autocomplete,
@@ -21,7 +21,8 @@ import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { isIdentityKey } from '../utils/identityUtils'
-import { defaultIdentity } from 'identinator'
+import { defaultIdentity } from '@bsv/sdk'
+// import { defaultIdentity } from 'identinator'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -35,7 +36,7 @@ export interface IdentitySearchFieldProps {
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme: themeProp,
   font = '"Roboto Mono", monospace',
-  confederacyHost = 'https://confederacy.babbage.systems',
+  // confederacyHost = 'https://confederacy.babbage.systems',
   onIdentitySelected = (selectedIdentity: Identity) => {
     // By default the onIdentitySelected handler will just log the selection.
     console.log('Selected Identity:', selectedIdentity)
@@ -92,14 +93,14 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     try {
       if (inputValue && !isSelecting) {
         await fetchIdentities(inputValue, setIsLoading)
-        setIsMncMissing(false)
+        // setIsMncMissing(false)
       }
     } catch (error) {
       setIsLoading(false)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       if (error.code === 'ERR_NO_METANET_IDENTITY') {
-        setIsMncMissing(true)
+        // setIsMncMissing(true)
         console.log(error)
       } else {
         // Handle other errors or rethrow them
@@ -115,12 +116,12 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
     return <>
       <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-        <Img
+        {/* <Img
           style={{ width: '100%', height: 'auto' }}
           src={selectedIdentity.avatarURL}
           confederacyHost={confederacyHost}
           loading={undefined}
-        />
+        /> */}
       </Avatar>
     </>
   }
@@ -260,7 +261,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          <Img
+                          {/* <Img
                             style={{
                               width: '95%',
                               height: '95%',
@@ -270,17 +271,17 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             src={option.badgeIconURL}
                             confederacyHost={confederacyHost}
                             loading={undefined}
-                          />
+                          /> */}
                         </Icon>
                       }
                     >
                       <Avatar>
-                        <Img
+                        {/* <Img
                           style={{ width: '100%', height: 'auto' }}
                           src={option.avatarURL}
                           confederacyHost={confederacyHost}
                           loading={undefined}
-                        />
+                        /> */}
                       </Avatar>
                     </Badge>
                   </Tooltip>

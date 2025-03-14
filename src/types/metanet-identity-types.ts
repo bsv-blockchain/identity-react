@@ -14,17 +14,9 @@ export interface Certifier {
   icon: string
   name: string
 }
-export interface SigniaResult {
-  certifier: Certifier
-  decryptedFields: DecryptedField
-  subject: string
-  type: string
-  signature: string
-}
 
 export interface IdentityProps {
   identityKey: string
-  confederacyHost?: string
   themeMode?: "light" | "dark"
 }
 

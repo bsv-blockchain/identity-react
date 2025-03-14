@@ -1,4 +1,4 @@
-import { discoverByIdentityKey, discoverByAttributes } from "@babbage/sdk-ts"
+import { IdentityClient } from "@bsv/sdk"
 import { Certifier } from "../types/metanet-identity-types"
 
 export const knownCertificateTypes = {
@@ -20,18 +20,17 @@ export const isIdentityKey = (key) => {
 
 export const fetchIdentities = async (query: string) => {
   let results
+  const client = new IdentityClient()
   // Figure out if the query is by IdentityKey
   if (isIdentityKey(query)) {
-    results = await discoverByIdentityKey({
-      identityKey: query,
-      description: "Discover MetaNet Identity",
+    results = await client.resolveByIdentityKey({
+      identityKey: query
     })
   } else {
-    results = await discoverByAttributes({
+    results = await client.resolveByAttributes({
       attributes: {
         any: query,
-      },
-      description: "Discover MetaNet Identity",
+      }
     })
   }
   return results

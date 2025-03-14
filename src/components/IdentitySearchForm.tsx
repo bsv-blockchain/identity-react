@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Grid } from '@mui/material'
 import SearchField from './SearchField'
-import { discoverByAttributes } from '@babbage/sdk-ts'
+import { IdentityClient } from '@bsv/sdk'
 
 interface FieldConfig {
   key: string
@@ -21,9 +21,9 @@ const SearchForm: React.FC<SearchFormProps> = ({ fields, onSubmit }) => {
   }
 
   const handleSubmit = async () => {
-    const results = await discoverByAttributes({
-      attributes: formData,
-      description: 'Discover MetaNet Identity'
+    const identityClient = new IdentityClient()
+    const results = await identityClient.resolveByAttributes({
+      attributes: formData
     })
     // Send back the results to the user
     onSubmit(results)

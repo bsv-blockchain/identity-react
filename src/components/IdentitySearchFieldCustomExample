@@ -104,7 +104,7 @@
 //         } catch (e) {
 //           setIsLoading(false)
 //           console.error("Error fetching identities: ", e)
-//           //@ts-ignore
+//           //@ts-nocheck
 //           if (e.code === "ERR_NO_METANET_IDENTITY") {
 //             setIsMncMissing(true)
 //           }

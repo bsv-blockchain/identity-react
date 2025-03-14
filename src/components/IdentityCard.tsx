@@ -1,37 +1,34 @@
-import { Avatar, Badge, Box, CardContent, Icon, Tooltip, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { discoverByIdentityKey } from '@babbage/sdk-ts'
-import { Img } from 'uhrp-react'
-import { IdentityProps, SigniaResult } from '../types/metanet-identity-types'
-import { parseIdentity, defaultIdentity } from 'identinator'
+import { Avatar, Badge, Box, CardContent, Icon, Tooltip, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { IdentityProps } from '../types/metanet-identity-types';
+import { defaultIdentity, IdentityClient } from '@bsv/sdk';
+
+// Create an IdentityClient instance
+const identityClient = new IdentityClient();
 
 const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
-  confederacyHost = 'https://confederacy.babbage.systems',
-  themeMode = 'light' // TODO: Resolve theme discrepancy with search component
+  themeMode = 'light'
 }) => {
-  const [resolvedIdentity, setResolvedIdentity] = useState(defaultIdentity)
+  const [resolvedIdentity, setResolvedIdentity] = useState(defaultIdentity);
+
   useEffect(() => {
     (async () => {
       try {
-        // Resolve a Signia verified identity from a counterparty
-        const matchingIdentities = await discoverByIdentityKey({
-          identityKey,
-          description: 'Resolve identity information from your trusted certifiers.'
+        // Fetch identities using the IdentityClient
+        const matchingIdentities = await identityClient.resolveByIdentityKey({
+          identityKey
         })
 
-        // Select the first result which is the most trusted
+        // Select the first result (most relevant/trusted)
         if (matchingIdentities.length > 0) {
-          const selectedIdentity = matchingIdentities[0] as SigniaResult
-          const parsedIdentity = parseIdentity(selectedIdentity)
-
-          setResolvedIdentity(parsedIdentity)
+          setResolvedIdentity(matchingIdentities[0]) // zeroth?
         }
       } catch (e) {
-        console.error(e)
+        console.error(e);
       }
-    })()
-  }, [identityKey])
+    })();
+  }, [identityKey]);
 
   return (
     <Box
@@ -66,22 +63,18 @@ const IdentityCard: React.FC<IdentityProps> = ({
                 justifyContent: 'center'
               }}
             >
-              <Img
+              <img
                 style={{ width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }}
-                src={
-                  resolvedIdentity.badgeIconURL
-                }
-                confederacyHost={confederacyHost}
+                src={resolvedIdentity.badgeIconURL}
                 loading={undefined}
               />
             </Icon>
           }
         >
           <Avatar alt={resolvedIdentity.name} sx={{ width: '2.5em', height: '2.5em' }}>
-            <Img
+            <img
               style={{ width: '100%', height: 'auto' }}
               src={resolvedIdentity.avatarURL}
-              confederacyHost={confederacyHost}
               loading={undefined}
             />
           </Avatar>
@@ -97,7 +90,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
         <Typography
           variant="h6"
           component="div"
-          fontSize={'1em'}
+          fontSize="1em"
           color={themeMode === 'light' ? 'black' : 'white'}
         >
           {resolvedIdentity.name}
@@ -107,7 +100,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
         </Typography>
       </CardContent>
     </Box>
-  )
-}
+  );
+};
 
-export default IdentityCard
+export default IdentityCard;

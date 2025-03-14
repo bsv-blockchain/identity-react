@@ -9,8 +9,7 @@ interface UseIdentitySearchProps {
 }
 
 export const useIdentitySearch = ({
-  confederacyHost = "https://confederacy.babbage.systems",
-  onIdentitySelected = () => {},
+  onIdentitySelected = () => { },
 }: UseIdentitySearchProps = {}) => {
   const [inputValue, setInputValue] = useState("")
   const { identities, fetchIdentities } = useStore()
@@ -40,7 +39,6 @@ export const useIdentitySearch = ({
   }
 
   return {
-    confederacyHost,
     inputValue,
     setInputValue: handleInputChange,
     selectedIdentity,
