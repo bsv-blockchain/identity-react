@@ -22,7 +22,6 @@ import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { isIdentityKey } from '../utils/identityUtils'
 import { defaultIdentity } from '@bsv/sdk'
-// import { defaultIdentity } from 'identinator'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -36,7 +35,6 @@ export interface IdentitySearchFieldProps {
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme: themeProp,
   font = '"Roboto Mono", monospace',
-  // confederacyHost = 'https://confederacy.babbage.systems',
   onIdentitySelected = (selectedIdentity: Identity) => {
     // By default the onIdentitySelected handler will just log the selection.
     console.log('Selected Identity:', selectedIdentity)
@@ -116,12 +114,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
     return <>
       <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-        {/* <Img
+        <img /** TODO: Use UHRP component */
           style={{ width: '100%', height: 'auto' }}
           src={selectedIdentity.avatarURL}
-          confederacyHost={confederacyHost}
           loading={undefined}
-        /> */}
+        />
       </Avatar>
     </>
   }
@@ -261,7 +258,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          {/* <Img
+                          <img /** TODO: Use UHRP component here */
                             style={{
                               width: '95%',
                               height: '95%',
@@ -269,19 +266,17 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                               borderRadius: '20%'
                             }}
                             src={option.badgeIconURL}
-                            confederacyHost={confederacyHost}
                             loading={undefined}
-                          /> */}
+                          />
                         </Icon>
                       }
                     >
                       <Avatar>
-                        {/* <Img
+                        <img /** TODO: Use UHRP component here */
                           style={{ width: '100%', height: 'auto' }}
                           src={option.avatarURL}
-                          confederacyHost={confederacyHost}
                           loading={undefined}
-                        /> */}
+                        />
                       </Avatar>
                     </Badge>
                   </Tooltip>

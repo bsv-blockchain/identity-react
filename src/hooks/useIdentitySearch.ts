@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { useEffect } from "react" // Switched to useEffect as we're not using async directly in the effect
+import { useState, useEffect } from "react" // Switched to useEffect as we're not using async directly in the effect
 import { useStore } from "../utils/store"
 import { Identity } from "../types/metanet-identity-types"
 
