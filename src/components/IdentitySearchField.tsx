@@ -78,7 +78,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       const newIdentity: Identity = {
         ...defaultIdentity,
         name: 'Custom Identity Key',
-        identityKey: inputValue.substring(0, 10)
+        identityKey: inputValue
       }
       return [newIdentity]
     }
