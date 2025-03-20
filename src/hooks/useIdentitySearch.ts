@@ -3,7 +3,6 @@ import { useStore } from "../utils/store"
 import { Identity } from "../types/metanet-identity-types"
 
 interface UseIdentitySearchProps {
-  confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void
 }
 

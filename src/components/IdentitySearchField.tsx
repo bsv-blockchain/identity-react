@@ -26,7 +26,6 @@ import { defaultIdentity } from '@bsv/sdk'
 export interface IdentitySearchFieldProps {
   theme?: Theme
   font?: string
-  confederacyHost?: string
   onIdentitySelected?: (selectedIdentity: Identity) => void,
   appName?: string,
   width?: string
