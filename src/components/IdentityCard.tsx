@@ -2,6 +2,7 @@ import { Avatar, Badge, Box, CardContent, Icon, Tooltip, Typography } from '@mui
 import React, { useEffect, useState } from 'react';
 import { IdentityProps } from '../types/metanet-identity-types';
 import { defaultIdentity, IdentityClient } from '@bsv/sdk';
+import { Img } from '@bsv/uhrp-react';
 
 // Create an IdentityClient instance
 const identityClient = new IdentityClient();
@@ -63,7 +64,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
                 justifyContent: 'center'
               }}
             >
-              <img
+              <Img
                 style={{ width: '95%', height: '95%', objectFit: 'cover', borderRadius: '20%' }}
                 src={resolvedIdentity.badgeIconURL}
                 loading={undefined}
@@ -72,7 +73,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
           }
         >
           <Avatar alt={resolvedIdentity.name} sx={{ width: '2.5em', height: '2.5em' }}>
-            <img
+            <Img
               style={{ width: '100%', height: 'auto' }}
               src={resolvedIdentity.avatarURL}
               loading={undefined}

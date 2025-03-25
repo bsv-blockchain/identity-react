@@ -4,7 +4,7 @@ import { Certifier } from "../types/metanet-identity-types"
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
-export const isIdentityKey = (key) => {
+export const isIdentityKey = (key: string) => {
   const regex = /^(02|03|04)[0-9a-fA-F]{64}$/
   return regex.test(key)
 }

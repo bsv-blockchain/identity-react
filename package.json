@@ -7,13 +7,22 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "./out/src/index.js",
-  "types": "./out/src/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
   "files": [
-    "out"
+    "dist/**/*"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "dependencies": {
-    "@bsv/sdk": "^1.4.3",
+    "@bsv/sdk": "^1.4.11",
+    "@bsv/uhrp-react": "^1.0.1",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.15.7",
     "@types/jest": "^29.5.11",

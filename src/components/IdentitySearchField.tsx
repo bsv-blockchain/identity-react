@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Identity } from '../types/metanet-identity-types'
 import { useStore } from '../utils/store'
-// import { Img } from 'uhrp-react'
 import SearchIcon from '@mui/icons-material/Search'
 import {
   Autocomplete,
@@ -22,6 +21,7 @@ import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { isIdentityKey } from '../utils/identityUtils'
 import { defaultIdentity } from '@bsv/sdk'
+import { Img } from '@bsv/uhrp-react'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
@@ -113,7 +113,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
     return <>
       <Avatar sx={{ width: 24, height: 24, marginRight: 1 }}>
-        <img /** TODO: Use UHRP component */
+        <Img
           style={{ width: '100%', height: 'auto' }}
           src={selectedIdentity.avatarURL}
           loading={undefined}
@@ -257,7 +257,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                             justifyContent: 'center'
                           }}
                         >
-                          <img /** TODO: Use UHRP component here */
+                          <Img
                             style={{
                               width: '95%',
                               height: '95%',
@@ -271,7 +271,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                       }
                     >
                       <Avatar>
-                        <img /** TODO: Use UHRP component here */
+                        <Img
                           style={{ width: '100%', height: 'auto' }}
                           src={option.avatarURL}
                           loading={undefined}
