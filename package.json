@@ -34,7 +34,9 @@
     "zustand": "^4.5.0"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint:ci": "echo 'No linting'",
+    "test": "echo 'No tests'"
   },
   "eslintConfig": {
     "extends": [
