@@ -2,6 +2,10 @@
   "name": "@bsv/identity-react",
   "version": "1.0.9",
   "description": "React components for resolving identity information on the MetaNet.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitcoin-sv/identity-react.git"
+  },
   "author": "BSV Blockchain Association",
   "license": "Open BSV License",
   "publishConfig": {
