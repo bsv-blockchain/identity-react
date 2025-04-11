@@ -29,6 +29,7 @@ export interface IdentitySearchFieldProps {
   onIdentitySelected?: (selectedIdentity: Identity) => void,
   appName?: string,
   width?: string
+  deduplicate?: boolean
 }
 
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
@@ -39,7 +40,8 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     console.log('Selected Identity:', selectedIdentity)
   },
   appName = 'This app',
-  width = '250px'
+  width = '250px',
+  deduplicate = true
 }) => {
   // Fallback to the default theme from the context
   const theme = themeProp || useTheme()!
@@ -122,6 +124,19 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     </>
   }
 
+  function dedupIdentities(all: Identity[]): Identity[] {
+    const uniques = new Set<string>()
+    return all.filter(result => {
+      if (uniques.has(result.identityKey)) {
+        return false
+      }
+      uniques.add(result.identityKey)
+      return true
+    })
+  }
+
+  const options = (deduplicate) ? dedupIdentities(identities) : identities
+
   return (
     <Box
       sx={{
@@ -143,7 +158,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       >
         <Autocomplete
           freeSolo
-          options={identities}
+          options={options}
           inputValue={inputValue}
           onInputChange={handleInputChange}
           onChange={handleSelect}
