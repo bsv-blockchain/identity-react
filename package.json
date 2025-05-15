@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "@bsv/sdk": "^1.4.11",
+    "@bsv/sdk": "^1.5.1",
     "@bsv/uhrp-react": "^1.0.1",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.15.7",
