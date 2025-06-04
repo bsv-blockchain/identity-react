@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react" // Switched to useEffect as we're not using async directly in the effect
 import { useStore } from "../utils/store"
-import { Identity } from "../types/metanet-identity-types"
+import { DisplayableIdentity } from "@bsv/sdk"
 
 interface UseIdentitySearchProps {
-  onIdentitySelected?: (selectedIdentity: Identity) => void
+  onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void
 }
 
 export const useIdentitySearch = ({
@@ -11,7 +11,7 @@ export const useIdentitySearch = ({
 }: UseIdentitySearchProps = {}) => {
   const [inputValue, setInputValue] = useState("")
   const { identities, fetchIdentities } = useStore()
-  const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(
+  const [selectedIdentity, setSelectedIdentity] = useState<DisplayableIdentity | null>(
     null
   )
   const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +29,7 @@ export const useIdentitySearch = ({
     setInputValue(newInputValue)
   }
 
-  const handleSelect = (_: React.SyntheticEvent, newValue: Identity | null) => {
+  const handleSelect = (_: React.SyntheticEvent, newValue: DisplayableIdentity | null) => {
     setSelectedIdentity(newValue)
     if (newValue) {
       onIdentitySelected(newValue)

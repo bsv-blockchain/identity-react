@@ -1,17 +1,19 @@
 import React, { useState } from 'react'
-import { Identity } from '../types/metanet-identity-types'
 import { useStore } from '../utils/store'
 import SearchIcon from '@mui/icons-material/Search'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
   Autocomplete,
   Avatar,
   Badge,
   Box,
   Icon,
+  IconButton,
   LinearProgress,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Snackbar,
   TextField,
   Tooltip,
   Typography
@@ -20,13 +22,13 @@ import { Theme, useTheme } from '@mui/material/styles'
 import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { isIdentityKey } from '../utils/identityUtils'
-import { defaultIdentity } from '@bsv/sdk'
+import { defaultIdentity, DisplayableIdentity } from '@bsv/sdk'
 import { Img } from '@bsv/uhrp-react'
 
 export interface IdentitySearchFieldProps {
   theme?: Theme
   font?: string
-  onIdentitySelected?: (selectedIdentity: Identity) => void,
+  onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void,
   appName?: string,
   width?: string
   deduplicate?: boolean
@@ -35,7 +37,7 @@ export interface IdentitySearchFieldProps {
 const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   theme: themeProp,
   font = '"Roboto Mono", monospace',
-  onIdentitySelected = (selectedIdentity: Identity) => {
+  onIdentitySelected = (selectedIdentity: DisplayableIdentity) => {
     // By default the onIdentitySelected handler will just log the selection.
     console.log('Selected Identity:', selectedIdentity)
   },
@@ -51,23 +53,32 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
   const [isMncMissing, setIsMncMissing] = useState(false)
+  const [copySnackbarOpen, setCopySnackbarOpen] = useState(false)
+  const [hoveredIdentityKey, setHoveredIdentityKey] = useState<string | null>(null)
 
   const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue)
     setIsSelecting(false)
-    setSelectedIdentity({} as Identity)
+    setSelectedIdentity({} as DisplayableIdentity)
   }
 
-  const handleSelect = (_event: React.SyntheticEvent, newValue: Identity | string | null) => {
+  const handleSelect = (_event: React.SyntheticEvent, newValue: DisplayableIdentity | string | null) => {
     if (newValue && typeof newValue !== 'string') {
       setIsSelecting(true)
       setSelectedIdentity(newValue)
       onIdentitySelected(newValue)
     }
   }
+  
+  const handleCopyIdentityKey = (identityKey: string, event: React.MouseEvent) => {
+    event.stopPropagation() // Prevent the click from triggering selection of the identity
+    navigator.clipboard.writeText(identityKey)
+      .then(() => setCopySnackbarOpen(true))
+      .catch(err => console.error('Could not copy identity key:', err))
+  }
 
   // Configure the filtering options for the AutoComplete component
-  const filterOptions = (options: Identity[], { inputValue }: { inputValue: string }) => {
+  const filterOptions = (options: DisplayableIdentity[], { inputValue }: { inputValue: string }) => {
     // Filters users by name or identityKey
     const filtered = options.filter(option =>
       option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
@@ -76,7 +87,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
     if (filtered.length === 0 && isIdentityKey(inputValue) && !isLoading) {
       // Create a new identity with the input as the identity key if no match found
-      const newIdentity: Identity = {
+      const newIdentity: DisplayableIdentity = {
         ...defaultIdentity,
         name: 'Custom Identity Key',
         identityKey: inputValue
@@ -124,7 +135,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     </>
   }
 
-  function dedupIdentities(all: Identity[]): Identity[] {
+  function dedupIdentities(all: DisplayableIdentity[]): DisplayableIdentity[] {
     const uniques = new Set<string>()
     return all.filter(result => {
       if (uniques.has(result.identityKey)) {
@@ -247,9 +258,13 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
               {children}
             </Box>
           )}
-          renderOption={(props, option: Identity) => {
+          renderOption={(props, option: DisplayableIdentity) => {
             return (
-              <ListItem {...props} key={`${option.identityKey}${option.name}${option.badgeLabel}`}>
+              <ListItem 
+                {...props} 
+                key={`${option.identityKey}${option.name}${option.badgeLabel}`}
+                onMouseEnter={() => setHoveredIdentityKey(option.identityKey)}
+                onMouseLeave={() => setHoveredIdentityKey(null)}>
                 <ListItemIcon>
                   <Tooltip
                     title={
@@ -302,9 +317,30 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                     </Typography>
                   }
                   secondary={
-                    <Typography variant="body2" style={{ color: 'gray' }}>
-                      {`${option.identityKey.slice(0, 10)}...`}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography variant="body2" style={{ color: 'gray' }}>
+                        {`${option.identityKey.slice(0, 10)}...`}
+                      </Typography>
+                      <Tooltip title="Copy identity key">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            ml: 1,
+                            p: 0.5,
+                            opacity: hoveredIdentityKey === option.identityKey ? 1 : 0,
+                            visibility: hoveredIdentityKey === option.identityKey ? 'visible' : 'hidden',
+                            transition: 'opacity 0.2s ease-in-out',
+                            // Reserve space even when button is hidden
+                            width: '24px',
+                            height: '24px',
+                            display: 'inline-flex',
+                          }}
+                          onClick={(e) => handleCopyIdentityKey(option.identityKey, e)}
+                        >
+                          <ContentCopyIcon fontSize="small" sx={{ color: 'gray', fontSize: '0.9rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   }
                 />
               </ListItem>
@@ -317,6 +353,13 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
           }}
         />
       </Box>
+      <Snackbar
+        open={copySnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setCopySnackbarOpen(false)}
+        message="Identity key copied to clipboard"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   )
 }

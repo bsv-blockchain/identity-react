@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { IdentityStore } from '../types/metanet-identity-types'
+import { IdentityStore } from '../types'
 import { isIdentityKey } from './identityUtils'
 import { IdentityClient } from '@bsv/sdk'
 

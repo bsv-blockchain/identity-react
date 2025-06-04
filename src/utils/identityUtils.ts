@@ -1,5 +1,5 @@
 import { IdentityClient, KNOWN_IDENTITY_TYPES as knownCertificateTypes } from "@bsv/sdk"
-import { Certifier } from "../types/metanet-identity-types"
+import { Certifier } from "../types"
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
