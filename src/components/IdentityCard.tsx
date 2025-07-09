@@ -1,12 +1,16 @@
 import { Avatar, Badge, Box, CardContent, Icon, IconButton, Snackbar, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { IdentityProps } from '../types';
-import { defaultIdentity, IdentityClient } from '@bsv/sdk';
+import { defaultIdentity, IdentityClient, DisplayableIdentity } from '@bsv/sdk';
 import { Img } from '@bsv/uhrp-react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Create an IdentityClient instance
 const identityClient = new IdentityClient();
+
+// Lightweight cache for resolved identities (shared across all component instances)
+const identityCache = new Map<string, { identity: DisplayableIdentity; timestamp: number }>();
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
 const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
@@ -25,19 +29,38 @@ const IdentityCard: React.FC<IdentityProps> = ({
   };
 
   useEffect(() => {
+    if (!identityKey) {
+      setResolvedIdentity(defaultIdentity);
+      return;
+    }
+
     (async () => {
       try {
+        // Check cache first
+        const cached = identityCache.get(identityKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
+          setResolvedIdentity(cached.identity);
+          return;
+        }
+
         // Fetch identities using the IdentityClient
         const matchingIdentities = await identityClient.resolveByIdentityKey({
           identityKey
-        })
+        });
 
         // Select the first result (most relevant/trusted)
         if (matchingIdentities.length > 0) {
-          setResolvedIdentity(matchingIdentities[0]) // zeroth?
+          const resolvedId = matchingIdentities[0];
+          setResolvedIdentity(resolvedId);
+
+          // Cache the result
+          identityCache.set(identityKey, {
+            identity: resolvedId,
+            timestamp: Date.now()
+          });
         }
       } catch (e) {
-        console.error(e);
+        console.error('Failed to resolve identity:', e);
       }
     })();
   }, [identityKey]);
@@ -125,7 +148,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
                     visibility: isHovering ? 'visible' : 'hidden',
                     transition: 'opacity 0.2s ease-in-out',
                     // Reserve space even when button is hidden
-                    width: '24px', 
+                    width: '24px',
                     height: '24px',
                   }}
                   onClick={handleCopyIdentityKey}
