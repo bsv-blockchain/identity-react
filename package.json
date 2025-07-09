@@ -1,6 +1,6 @@
 {
   "name": "@bsv/identity-react",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "React components for resolving identity information on the MetaNet.",
   "repository": {
     "type": "git",
