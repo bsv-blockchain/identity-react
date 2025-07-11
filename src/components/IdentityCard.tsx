@@ -1,12 +1,81 @@
 import { Avatar, Badge, Box, CardContent, Icon, IconButton, Snackbar, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { IdentityProps } from '../types';
-import { defaultIdentity, IdentityClient } from '@bsv/sdk';
+import { defaultIdentity, IdentityClient, DisplayableIdentity } from '@bsv/sdk';
 import { Img } from '@bsv/uhrp-react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Create an IdentityClient instance
 const identityClient = new IdentityClient();
+
+// SessionStorage-backed cache for resolved identities (persists across page reloads)
+const CACHE_KEY = 'identity-card-cache';
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_ENTRIES = 100; // Prevent unbounded growth
+
+class IdentityCache {
+  private getCache(): Map<string, { identity: DisplayableIdentity; timestamp: number }> {
+    try {
+      const stored = sessionStorage.getItem(CACHE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return new Map(Object.entries(parsed));
+      }
+    } catch (e) {
+      console.warn('Failed to load identity cache from sessionStorage:', e);
+    }
+    return new Map();
+  }
+
+  private saveCache(cache: Map<string, { identity: DisplayableIdentity; timestamp: number }>): void {
+    try {
+      const obj = Object.fromEntries(cache);
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      console.warn('Failed to save identity cache to sessionStorage:', e);
+    }
+  }
+
+  get(identityKey: string): DisplayableIdentity | null {
+    const cache = this.getCache();
+    const entry = cache.get(identityKey);
+
+    if (!entry) return null;
+
+    // Check if expired
+    if (Date.now() - entry.timestamp > CACHE_EXPIRY) {
+      cache.delete(identityKey);
+      this.saveCache(cache);
+      return null;
+    }
+
+    return entry.identity;
+  }
+
+  set(identityKey: string, identity: DisplayableIdentity): void {
+    const cache = this.getCache();
+    
+    // Simple LRU: remove oldest entries if cache is full
+    if (cache.size >= MAX_CACHE_ENTRIES) {
+      const firstKey = cache.keys().next().value;
+      if (firstKey) {
+        cache.delete(firstKey);
+      }
+    }
+    
+    cache.set(identityKey, {
+      identity,
+      timestamp: Date.now()
+    });
+    this.saveCache(cache);
+  }
+
+  size(): number {
+    return this.getCache().size;
+  }
+}
+
+const identityCache = new IdentityCache();
 
 const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
@@ -25,19 +94,35 @@ const IdentityCard: React.FC<IdentityProps> = ({
   };
 
   useEffect(() => {
+    if (!identityKey) {
+      setResolvedIdentity(defaultIdentity);
+      return;
+    }
+
     (async () => {
       try {
+        // Check cache first
+        const cached = identityCache.get(identityKey);
+        if (cached) {
+          setResolvedIdentity(cached);
+          return;
+        }
+
         // Fetch identities using the IdentityClient
         const matchingIdentities = await identityClient.resolveByIdentityKey({
           identityKey
-        })
+        });
 
         // Select the first result (most relevant/trusted)
         if (matchingIdentities.length > 0) {
-          setResolvedIdentity(matchingIdentities[0]) // zeroth?
+          const resolvedId = matchingIdentities[0];
+          setResolvedIdentity(resolvedId);
+
+          // Cache the result
+          identityCache.set(identityKey, resolvedId);
         }
       } catch (e) {
-        console.error(e);
+        console.error('Failed to resolve identity:', e);
       }
     })();
   }, [identityKey]);
@@ -125,7 +210,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
                     visibility: isHovering ? 'visible' : 'hidden',
                     transition: 'opacity 0.2s ease-in-out',
                     // Reserve space even when button is hidden
-                    width: '24px', 
+                    width: '24px',
                     height: '24px',
                   }}
                   onClick={handleCopyIdentityKey}

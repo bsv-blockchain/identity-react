@@ -22,12 +22,11 @@ import {
 import { Theme, useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import useAsyncEffect from 'use-async-effect'
 import { NoMncModal } from 'metanet-react-prompt'
 import { defaultIdentity, DisplayableIdentity } from '@bsv/sdk'
 import { Img } from '@bsv/uhrp-react'
 import { isIdentityKey } from '../utils/identityUtils'
-import { useStore } from '../utils/store'
+import { useIdentitySearch } from '../hooks/useIdentitySearch'
 
 // Create a global event system without causing re-renders in React components
 const copyEvents = {
@@ -178,28 +177,21 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   deduplicate = true
 }) => {
   const theme = themeProp || useTheme()
-  const { identities, fetchIdentities } = useStore()
-
-  const [inputValue, setInputValue] = useState('')
-  const [selectedIdentity, setSelectedIdentity] = useState(defaultIdentity)
-  const [loading, setLoading] = useState(false)
-  const [selecting, setSelecting] = useState(false)
+  
+  // Use the optimized hook for identity search
+  const { 
+    inputValue, 
+    handleInputChange, 
+    selectedIdentity, 
+    handleSelect, 
+    identities, 
+    loading 
+  } = useIdentitySearch({ onIdentitySelected })
+  
   const [mncMissing, setMncMissing] = useState(false)
 
   // ─────────── Handlers & helpers ───────────
-  const handleInputChange = (_: React.SyntheticEvent, val: string) => {
-    setInputValue(val)
-    setSelecting(false)
-    setSelectedIdentity({} as DisplayableIdentity)
-  }
-
-  const handleSelect = (_: React.SyntheticEvent, val: DisplayableIdentity | string | null) => {
-    if (val && typeof val !== 'string') {
-      setSelecting(true)
-      setSelectedIdentity(val)
-      onIdentitySelected?.(val)
-    }
-  }
+  // Input change and select handlers are now provided by the hook
 
   /** Memoised list filter. Adds a synthetic option when the user types a raw key. */
   const filterOptions = useCallback(
@@ -235,7 +227,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
 
   /** Leading adornment — memoised to avoid re‑creation */
   const adornment = useMemo(() => {
-    if (!selectedIdentity.name || selectedIdentity.name === defaultIdentity.name) {
+    if (!selectedIdentity?.name || selectedIdentity.name === defaultIdentity.name) {
       return <SearchIcon sx={{ color: '#FC433F', mr: 1 }} />
     }
     return (
@@ -246,23 +238,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   }, [selectedIdentity])
 
   // ─────────── Data fetching ───────────
-  useAsyncEffect(
-    async isMounted => {
-      if (!inputValue || selecting) return
-      try {
-        await fetchIdentities(inputValue, setLoading)
-      } catch (err: any) {
-        if (err?.code === 'ERR_NO_METANET_IDENTITY') {
-          setMncMissing(true)
-        } else {
-          console.error(err)
-        }
-      } finally {
-        if (isMounted()) setLoading(false)
-      }
-    },
-    [inputValue, selecting]
-  )
+  // Data fetching is now handled by the optimized useIdentitySearch hook
 
   // ─────────── Render ───────────
   return (
