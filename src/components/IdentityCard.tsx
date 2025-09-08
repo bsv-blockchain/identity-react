@@ -21,8 +21,8 @@ class IdentityCache {
         const parsed = JSON.parse(stored);
         return new Map(Object.entries(parsed));
       }
-    } catch {
-      // Silently ignore sessionStorage errors and use empty cache
+    } catch (e) {
+      console.warn('Failed to load identity cache from sessionStorage:', e);
     }
     return new Map();
   }
@@ -31,8 +31,8 @@ class IdentityCache {
     try {
       const obj = Object.fromEntries(cache);
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(obj));
-    } catch {
-      // Silently ignore sessionStorage save errors
+    } catch (e) {
+      console.warn('Failed to save identity cache to sessionStorage:', e);
     }
   }
 
@@ -89,9 +89,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
     if (identityKey) {
       navigator.clipboard.writeText(identityKey)
         .then(() => setCopySnackbarOpen(true))
-        .catch(() => {
-          // Silently ignore clipboard errors - user will notice if copy failed
-        })
+        .catch(err => console.error('Could not copy identity key:', err))
     }
   };
 
