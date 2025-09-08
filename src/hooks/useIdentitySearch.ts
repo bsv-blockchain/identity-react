@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { useStore } from "../utils/store"
 import { DisplayableIdentity } from "@bsv/sdk"
+import type { AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
+import { fetchIdentities } from "../utils/identityUtils"
 
 interface UseIdentitySearchProps {
   onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void
@@ -47,16 +48,12 @@ const searchCache = new SearchCache()
 /**
  * Custom hook for identity search with debouncing, caching, and race condition prevention.
  * 
- * **Store Dependencies:**
- * - Requires `useStore` with `fetchIdentities(query: string, setIsLoading: Function)` method
- * - Store should update its `identities` state after successful fetch
- * 
- * **Side Effects:**
- * - Manages internal cache (SearchCache) with 5-minute expiry and LRU eviction
+ * **Features:**
+ * - Internal cache (SearchCache) with 5-minute expiry and LRU eviction
  * - Debounces search requests by 300ms to prevent excessive API calls
  * - Uses request ID system to prevent race conditions from out-of-order responses
  * 
- * **Behavior:**
+ * **Performance:**
  * - Instant results for cached queries (0ms response time)
  * - Loading state only shows for non-cached searches
  * - Normalizes cache keys (lowercase, trimmed) for better hit rates
@@ -72,49 +69,50 @@ export const useIdentitySearch = ({
   const [selectedIdentity, setSelectedIdentity] = useState<DisplayableIdentity | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [identities, setIdentities] = useState<DisplayableIdentity[]>([])
+  const [lastSearchTerm, setLastSearchTerm] = useState("")
 
   // Refs for managing async operations
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastRequestIdRef = useRef<number>(0)
-  const justSelectedRef = useRef<boolean>(false) // Track if we just selected an option
-  const { fetchIdentities } = useStore()
+  const justSelectedRef = useRef<boolean>(false) // Prevent search after selection
+  const shouldClearResultsRef = useRef<boolean>(false) // Track explicit clear actions (X button)
 
-  // Optimized fetch function with enhanced caching and cancellation
+  // Direct search function with improved error handling and state management
   const performSearch = useCallback(async (query: string, requestId: number) => {
     // Check cache first
     const cachedResult = searchCache.get(query)
     if (cachedResult && requestId === lastRequestIdRef.current) {
       setIdentities(cachedResult)
+      setLastSearchTerm(query)
       setIsLoading(false)
       return
     }
 
     try {
       // Only proceed if this is still the latest request
-      if (requestId !== lastRequestIdRef.current) return
+      if (requestId !== lastRequestIdRef.current) {
+        return
+      }
 
       setIsLoading(true)
 
-      // Use the existing fetchIdentities with a custom setter
-      await fetchIdentities(query, () => { }) // We manage loading state ourselves
+      const searchResults = await fetchIdentities(query)
 
-      // Get the results from the store
-      const searchResults = useStore.getState().identities
-
-      // Only update if this is still the latest request
+      // Verify this is still the latest request before updating state (prevents race conditions)
       if (requestId === lastRequestIdRef.current) {
         setIdentities(searchResults)
         searchCache.set(query, searchResults)
+        setLastSearchTerm(query)
         setIsLoading(false)
       }
     } catch (error: unknown) {
       // Only handle error if this is still the latest request
       if (requestId === lastRequestIdRef.current) {
-        console.error('Identity search error:', error)
+        setIdentities([])
         setIsLoading(false)
       }
     }
-  }, [fetchIdentities])
+  }, [])
 
   // Debounced search effect with instant cache lookup
   useEffect(() => {
@@ -129,10 +127,14 @@ export const useIdentitySearch = ({
       clearTimeout(debounceTimeoutRef.current)
     }
 
-    // Clear results and loading state if input is empty
+    // Handle empty input - only clear results on explicit clear (X button clicked)
     if (!inputValue.trim()) {
       setIsLoading(false)
-      setIdentities([])
+      if (shouldClearResultsRef.current) {
+        setIdentities([])
+        setLastSearchTerm("")
+        shouldClearResultsRef.current = false
+      }
       return
     }
 
@@ -140,8 +142,16 @@ export const useIdentitySearch = ({
     const cachedResult = searchCache.get(inputValue.trim())
     if (cachedResult) {
       setIdentities(cachedResult)
+      setLastSearchTerm(inputValue.trim())
       setIsLoading(false)
       return
+    }
+
+    // Clear existing results if searching for something different
+    // Avoids showing stale results while new search loads
+    const currentQuery = inputValue.trim()
+    if (identities.length > 0 && lastSearchTerm !== currentQuery) {
+      setIdentities([])
     }
 
     // Increment request ID for race condition prevention
@@ -163,6 +173,7 @@ export const useIdentitySearch = ({
     }
   }, [inputValue, performSearch])
 
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -174,15 +185,25 @@ export const useIdentitySearch = ({
 
   const handleInputChange = useCallback((
     _: React.SyntheticEvent,
-    newInputValue: string
+    newInputValue: string,
+    reason: AutocompleteInputChangeReason
   ) => {
+    // Mark for clearing only on explicit clear button (X) or manual delete to empty
+    if (reason === 'clear' || (reason === 'input' && inputValue.trim() && !newInputValue.trim())) {
+      shouldClearResultsRef.current = true
+    }
+
     setInputValue(newInputValue)
-  }, [])
+  }, [inputValue])
 
   const handleSelect = useCallback((_: React.SyntheticEvent, newValue: DisplayableIdentity | string | null) => {
     if (newValue && typeof newValue !== 'string') {
-      // Mark that we just selected an option to prevent unnecessary search
+      // Mark that we just selected to prevent triggering search on the next useEffect
       justSelectedRef.current = true
+
+      // Clear search state after selection
+      setIdentities([])
+      setLastSearchTerm("")
       setSelectedIdentity(newValue)
       onIdentitySelected?.(newValue)
     } else {
@@ -193,12 +214,11 @@ export const useIdentitySearch = ({
   // Memoized return object to prevent unnecessary re-renders
   return useMemo(() => ({
     inputValue,
-    handleInputChange,
-    selectedIdentity,
-    handleSelect,
+    isLoading,
     identities,
-    loading: isLoading,
-    // Expose cache control for advanced use cases
-    clearCache: () => searchCache.clear()
-  }), [inputValue, handleInputChange, selectedIdentity, handleSelect, identities, isLoading])
+    selectedIdentity,
+    handleInputChange,
+    handleSelect,
+    clearCache: searchCache.clear.bind(searchCache),
+  }), [inputValue, isLoading, identities, selectedIdentity, handleInputChange, handleSelect])
 }
