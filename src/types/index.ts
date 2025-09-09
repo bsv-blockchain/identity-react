@@ -28,3 +28,13 @@ export interface IdentityStore {
     setIsLoading: Dispatch<SetStateAction<boolean>>
   ) => Promise<void>
 }
+
+export const DEFAULT_IDENTITY: DisplayableIdentity = {
+  name: 'Unknown Identity',
+  avatarURL: '',
+  identityKey: '',
+  abbreviatedKey: '',
+  badgeIconURL: '',
+  badgeLabel: 'Not verified by anyone you trust.',
+  badgeClickURL: 'https://projectbabbage.com/docs/unknown-identity'
+}

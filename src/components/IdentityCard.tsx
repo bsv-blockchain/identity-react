@@ -1,7 +1,7 @@
 import { Avatar, Badge, Box, CardContent, Icon, IconButton, Snackbar, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { IdentityProps } from '../types';
-import { defaultIdentity, IdentityClient, DisplayableIdentity } from '@bsv/sdk';
+import { DEFAULT_IDENTITY, IdentityProps } from '../types';
+import { IdentityClient, DisplayableIdentity } from '@bsv/sdk';
 import { Img } from '@bsv/uhrp-react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
@@ -54,7 +54,7 @@ class IdentityCache {
 
   set(identityKey: string, identity: DisplayableIdentity): void {
     const cache = this.getCache();
-    
+
     // Simple LRU: remove oldest entries if cache is full
     if (cache.size >= MAX_CACHE_ENTRIES) {
       const firstKey = cache.keys().next().value;
@@ -62,7 +62,7 @@ class IdentityCache {
         cache.delete(firstKey);
       }
     }
-    
+
     cache.set(identityKey, {
       identity,
       timestamp: Date.now()
@@ -81,7 +81,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
   identityKey,
   themeMode = 'light'
 }) => {
-  const [resolvedIdentity, setResolvedIdentity] = useState(defaultIdentity);
+  const [resolvedIdentity, setResolvedIdentity] = useState<DisplayableIdentity>(DEFAULT_IDENTITY);
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -95,7 +95,7 @@ const IdentityCard: React.FC<IdentityProps> = ({
 
   useEffect(() => {
     if (!identityKey) {
-      setResolvedIdentity(defaultIdentity);
+      setResolvedIdentity(DEFAULT_IDENTITY);
       return;
     }
 
@@ -121,8 +121,9 @@ const IdentityCard: React.FC<IdentityProps> = ({
           // Cache the result
           identityCache.set(identityKey, resolvedId);
         }
-      } catch (e) {
-        console.error('Failed to resolve identity:', e);
+      } catch (error) {
+        // Silently fall back to default identity on resolution failure
+        setResolvedIdentity(DEFAULT_IDENTITY);
       }
     })();
   }, [identityKey]);

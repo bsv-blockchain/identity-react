@@ -23,10 +23,11 @@ import { Theme, useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { NoMncModal } from 'metanet-react-prompt'
-import { defaultIdentity, DisplayableIdentity } from '@bsv/sdk'
+import { DisplayableIdentity } from '@bsv/sdk'
 import { Img } from '@bsv/uhrp-react'
 import { isIdentityKey } from '../utils/identityUtils'
 import { useIdentitySearch } from '../hooks/useIdentitySearch'
+import { DEFAULT_IDENTITY } from '../types'
 
 // Create a global event system without causing re-renders in React components
 const copyEvents = {
@@ -138,8 +139,8 @@ const IdentityItem = memo(({ option, props }: IdentityItemProps) => {
       <ListItemText
         primary={<Typography noWrap>{option.name}</Typography>}
         secondary={
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+          <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography component="span" variant="body2" color="text.secondary">
               {`${option.identityKey.slice(0, 10)}…`}
             </Typography>
             <Tooltip title="Copy identity key">
@@ -177,18 +178,19 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   deduplicate = true
 }) => {
   const theme = themeProp || useTheme()
-  
+
   // Use the optimized hook for identity search
-  const { 
-    inputValue, 
-    handleInputChange, 
-    selectedIdentity, 
-    handleSelect, 
-    identities, 
-    loading 
+  const {
+    inputValue,
+    isLoading,
+    identities,
+    selectedIdentity,
+    handleInputChange,
+    handleSelect,
   } = useIdentitySearch({ onIdentitySelected })
-  
+
   const [mncMissing, setMncMissing] = useState(false)
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false)
 
   // ─────────── Handlers & helpers ───────────
   // Input change and select handlers are now provided by the hook
@@ -196,38 +198,52 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
   /** Memoised list filter. Adds a synthetic option when the user types a raw key. */
   const filterOptions = useCallback(
     (opts: DisplayableIdentity[], { inputValue }: { inputValue: string }) => {
-      const lower = inputValue.toLowerCase()
-      const filtered = opts.filter(
-        o => o.name.toLowerCase().includes(lower) || o.identityKey.toLowerCase().includes(lower)
-      )
-      if (filtered.length === 0 && isIdentityKey(inputValue) && !loading) {
+      if (opts.length > 0) {
+        return opts
+      }
+
+      if (isIdentityKey(inputValue) && !isLoading) {
         return [
           {
-            ...defaultIdentity,
+            ...DEFAULT_IDENTITY,
             name: 'Custom Identity Key',
             identityKey: inputValue
           }
         ]
       }
-      return filtered
+
+      return []
     },
-    [loading]
+    [isLoading]
   )
 
-  /** Memoised unique‑by‑identityKey helper */
-  const uniqueOptions = useMemo(() => {
-    if (!deduplicate) return identities
-    const set = new Set<string>()
-    return identities.filter(o => {
-      if (set.has(o.identityKey)) return false
-      set.add(o.identityKey)
-      return true
-    })
-  }, [identities, deduplicate])
+  /** Filter and deduplicate search results */
+  const filteredIdentities = useMemo(() => {
+    // Show results even when input is empty (clearOnBlur=false preserves results)
+    // Only hide on initial render when no search has been performed
+    if (!inputValue.trim() && identities.length === 0) {
+      return []
+    }
+
+    const uniqueOptions = deduplicate
+      ? identities.filter((identity, index, array) =>
+        array.findIndex(i => i.identityKey === identity.identityKey) === index
+      )
+      : identities
+
+    return filterOptions(uniqueOptions, { inputValue })
+  }, [identities, deduplicate, filterOptions, inputValue])
+
+  const handleFocus = useCallback(() => {
+    // Open dropdown if we have results (clearOnBlur=false preserves them)
+    if (identities.length > 0) {
+      setAutocompleteOpen(true)
+    }
+  }, [identities.length])
 
   /** Leading adornment — memoised to avoid re‑creation */
   const adornment = useMemo(() => {
-    if (!selectedIdentity?.name || selectedIdentity.name === defaultIdentity.name) {
+    if (!selectedIdentity?.name || selectedIdentity.name === DEFAULT_IDENTITY.name) {
       return <SearchIcon sx={{ color: '#FC433F', mr: 1 }} />
     }
     return (
@@ -257,13 +273,19 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
         <NoMncModal appName={appName} open={mncMissing} onClose={() => setMncMissing(false)} />
         <Box sx={{ position: 'relative', width: 'fit-content', boxShadow: 3 }}>
           <Autocomplete
-            freeSolo
-            options={uniqueOptions}
+            options={filteredIdentities}
+            value={selectedIdentity}
             inputValue={inputValue}
             onInputChange={handleInputChange}
             onChange={handleSelect}
             getOptionLabel={o => (typeof o === 'string' ? o : o.name)}
             filterOptions={filterOptions}
+            noOptionsText={inputValue.trim() ? "No identities found" : "Start typing to search for identities"}
+            open={autocompleteOpen}
+            onOpen={() => setAutocompleteOpen(true)}
+            onClose={() => setAutocompleteOpen(false)}
+            clearOnBlur={false}
+            selectOnFocus={false}
             PaperComponent={({ children }) => (
               <Box
                 sx={{
@@ -284,6 +306,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                   {...params}
                   label="Search Identity"
                   variant="filled"
+                  onFocus={handleFocus}
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: adornment,
@@ -296,7 +319,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
                     '& .MuiFilledInput-underline:after': { borderBottomColor: '#FC433F' }
                   }}
                 />
-                {loading && (
+                {isLoading && (
                   <LinearProgress
                     sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2 }}
                   />

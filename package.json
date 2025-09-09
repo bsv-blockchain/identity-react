@@ -1,6 +1,6 @@
 {
   "name": "@bsv/identity-react",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "React components for resolving identity information on the MetaNet.",
   "repository": {
     "type": "git",
@@ -25,17 +25,18 @@
     }
   },
   "dependencies": {
-    "@bsv/sdk": "^1.7.1",
-    "@bsv/uhrp-react": "^1.0.3",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.15.7",
+    "@bsv/sdk": "^1.7.4",
+    "@bsv/uhrp-react": "^1.0.4",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "metanet-react-prompt": "^1.0.4",
-    "react": "^18.2.0",
     "react-icons": "^5.1.0",
-    "use-async-effect": "^2.2.7",
-    "zustand": "^4.5.0"
+    "use-async-effect": "^2.2.7"
+  },
+  "peerDependencies": {
+    "@mui/icons-material": ">=5.0.0",
+    "@mui/material": ">=5.0.0",
+    "react": ">=18.0.0"
   },
   "scripts": {
     "build": "tsc",
