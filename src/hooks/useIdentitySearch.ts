@@ -114,11 +114,13 @@ export const useIdentitySearch = ({
     } catch (error: unknown) {
       // Only handle error if this is still the latest request
       if (requestId === lastRequestIdRef.current) {
+        console.error('Identity search failed:', error)
+        console.error('Search params:', { query, wallet: !!wallet, options, originator })
         setIdentities([])
         setIsLoading(false)
       }
     }
-  }, [])
+  }, [wallet, options, originator])
 
   // Debounced search effect with instant cache lookup
   useEffect(() => {
