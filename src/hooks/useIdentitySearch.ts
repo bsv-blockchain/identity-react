@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { DisplayableIdentity } from "@bsv/sdk"
+import { DisplayableIdentity, WalletInterface, IdentityClientOptions, OriginatorDomainNameStringUnder250Bytes } from "@bsv/sdk"
 import type { AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import { fetchIdentities } from "../utils/identityUtils"
 
 interface UseIdentitySearchProps {
   onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void
+  wallet?: WalletInterface | undefined,
+  options?: IdentityClientOptions | undefined,
+  originator?: OriginatorDomainNameStringUnder250Bytes | undefined
 }
 
 // Enhanced cache with cleanup
@@ -64,6 +67,9 @@ const searchCache = new SearchCache()
  */
 export const useIdentitySearch = ({
   onIdentitySelected,
+  wallet,
+  options,
+  originator
 }: UseIdentitySearchProps = {}) => {
   const [inputValue, setInputValue] = useState("")
   const [selectedIdentity, setSelectedIdentity] = useState<DisplayableIdentity | null>(null)
@@ -96,7 +102,7 @@ export const useIdentitySearch = ({
 
       setIsLoading(true)
 
-      const searchResults = await fetchIdentities(query)
+      const searchResults = await fetchIdentities(query, wallet, options, originator)
 
       // Verify this is still the latest request before updating state (prevents race conditions)
       if (requestId === lastRequestIdRef.current) {

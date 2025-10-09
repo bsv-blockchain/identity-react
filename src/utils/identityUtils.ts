@@ -1,4 +1,4 @@
-import { IdentityClient, KNOWN_IDENTITY_TYPES as knownCertificateTypes } from "@bsv/sdk"
+import { IdentityClient, KNOWN_IDENTITY_TYPES as knownCertificateTypes, IdentityClientOptions, OriginatorDomainNameStringUnder250Bytes, WalletInterface } from "@bsv/sdk"
 import { Certifier } from "../types"
 
 export const sleep = (ms: number) => {
@@ -9,9 +9,9 @@ export const isIdentityKey = (key: string) => {
   return regex.test(key)
 }
 
-export const fetchIdentities = async (query: string) => {
+export const fetchIdentities = async (query: string, wallet?: WalletInterface | undefined, options?: IdentityClientOptions | undefined, originator?: OriginatorDomainNameStringUnder250Bytes | undefined) => {
   let results
-  const client = new IdentityClient()
+  const client = new IdentityClient(wallet, options, originator)
   // Figure out if the query is by IdentityKey
   if (isIdentityKey(query)) {
     results = await client.resolveByIdentityKey({
