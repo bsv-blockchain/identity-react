@@ -1,4 +1,4 @@
-import { DisplayableIdentity } from "@bsv/sdk"
+import { DisplayableIdentity, WalletInterface, IdentityClientOptions, OriginatorDomainNameStringUnder250Bytes } from "@bsv/sdk"
 import { Dispatch, SetStateAction } from "react"
 
 export interface DecryptedField {
@@ -25,7 +25,10 @@ export interface IdentityStore {
   identities: DisplayableIdentity[]
   fetchIdentities: (
     query: string,
-    setIsLoading: Dispatch<SetStateAction<boolean>>
+    setIsLoading: Dispatch<SetStateAction<boolean>>,
+    wallet?: WalletInterface | undefined,
+    options?: IdentityClientOptions | undefined,
+    originator?: OriginatorDomainNameStringUnder250Bytes | undefined
   ) => Promise<void>
 }
 
