@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "@bsv/sdk": "^2.0.3",
+    "@bsv/sdk": "^2.5.0",
     "@bsv/uhrp-react": "^1.0.5",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
