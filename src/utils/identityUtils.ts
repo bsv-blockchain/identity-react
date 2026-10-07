@@ -1,60 +1,62 @@
-import { IdentityClient, KNOWN_IDENTITY_TYPES as knownCertificateTypes, IdentityClientOptions, OriginatorDomainNameStringUnder250Bytes, WalletInterface } from "@bsv/sdk"
-import { Certifier } from "../types"
+import {
+  IdentityClient,
+  KNOWN_IDENTITY_TYPES as knownCertificateTypes,
+  IdentityClientOptions,
+  OriginatorDomainNameStringUnder250Bytes,
+  WalletInterface
+} from '@bsv/sdk'
+import { Certifier } from '../types'
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 export const isIdentityKey = (key: string) => {
-  const regex = /^(02|03|04)[0-9a-fA-F]{64}$/
+  const regex = /^(02|03)[0-9a-fA-F]{64}$/
   return regex.test(key)
-}
-
-// Cache the IdentityClient so ContactsManager's in-memory cache persists across searches
-let cachedClient: IdentityClient | null = null
-let cachedWallet: WalletInterface | undefined
-let cachedOptionsJson: string | undefined
-let cachedOriginator: OriginatorDomainNameStringUnder250Bytes | undefined
-
-function getClient(wallet?: WalletInterface, options?: IdentityClientOptions, originator?: OriginatorDomainNameStringUnder250Bytes): IdentityClient {
-  // wallet is compared by reference — callers should pass a stable instance
-  // options is compared by value (JSON) since callers may create new object literals
-  const optionsJson = options != null ? JSON.stringify(options) : undefined
-  if (cachedClient && cachedWallet === wallet && cachedOptionsJson === optionsJson && cachedOriginator === originator) {
-    return cachedClient
-  }
-  cachedClient = new IdentityClient(wallet, options, originator)
-  cachedWallet = wallet
-  cachedOptionsJson = optionsJson
-  cachedOriginator = originator
-  return cachedClient
 }
 
 export const fetchIdentities = async (
   query: string,
   wallet?: WalletInterface | undefined,
-  options?: IdentityClientOptions | undefined,
+  options?: Partial<IdentityClientOptions> | undefined,
   originator?: OriginatorDomainNameStringUnder250Bytes | undefined,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onContactError?: (error: unknown) => void
 ) => {
   // Bail immediately if already aborted
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
-  const client = getClient(wallet, options, originator)
+  // Query results are cached by the hook. Each uncached lookup gets fresh contacts,
+  // so clearing that cache also refreshes a separately edited Contacts basket.
+  const client = new IdentityClient(wallet, options, originator)
+  const resolutionOptions = {
+    useContacts: true,
+    contactErrorMode: 'fallback' as const,
+    contactTimeoutMs: 2000,
+    onContactError: (error: unknown) => {
+      if (!signal?.aborted) onContactError?.(error)
+    }
+  }
 
   // Race the actual fetch against the abort signal so callers can cancel
   // in-flight requests when a newer query supersedes this one.
   const fetchPromise = isIdentityKey(query)
-    ? client.resolveByIdentityKey({ identityKey: query }, true)
-    : client.resolveByAttributes({ attributes: { any: query } }, true)
+    ? client.resolveByIdentityKey({ identityKey: query.toLowerCase() }, resolutionOptions)
+    : client.resolveByAttributes({ attributes: { any: query } }, resolutionOptions)
 
   if (!signal) return await fetchPromise
 
-  return await Promise.race([
-    fetchPromise,
-    new Promise<never>((_, reject) => {
-      signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true })
-    })
-  ])
+  let abortListener: () => void = () => {}
+  const aborted = new Promise<never>((_, reject) => {
+    abortListener = () => reject(new DOMException('Aborted', 'AbortError'))
+    signal.addEventListener('abort', abortListener, { once: true })
+    if (signal.aborted) abortListener()
+  })
+  try {
+    return await Promise.race([fetchPromise, aborted])
+  } finally {
+    signal.removeEventListener('abort', abortListener)
+  }
 }
 
 // Returns the correct tool tip depending on the certifier and certificate type

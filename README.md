@@ -61,7 +61,7 @@ const IdentityDisplay: React.FC = () => {
 }
 ```
 
-> **Note:** The search field provides instant results for cached queries and is debounced (300ms) for new searches to optimize performance.
+> **Note:** The search field provides instant results for cached queries and is debounced (400ms) for new searches to optimize performance.
 
 ## Example Headless Usage (useIdentitySearch Hook)
 
@@ -73,7 +73,10 @@ import { DisplayableIdentity } from '@bsv/sdk'
 const App = () => {
   const {
     identities,
-    loading,
+    isLoading,
+    searchError,
+    contactWarning,
+    retrySearch,
     inputValue,
     selectedIdentity,
     handleInputChange,
@@ -89,11 +92,11 @@ const App = () => {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <input
         value={inputValue}
-        onChange={handleInputChange}
+        onChange={event => handleInputChange(event, event.target.value, 'input')}
         placeholder="Search for identities..."
       />
       
-      {loading ? (
+      {isLoading ? (
         <p>Loading identities...</p>
       ) : (
         <>
@@ -134,12 +137,42 @@ const App = () => {
 export default App
 ```
 
+## Identity search recovery (2.0.0)
+
+Version 2 requires SDK 3.2.0 or later, React 18, and Node 22 or later for package
+and application tooling. This is an ESM React package for bundler consumers.
+The existing components, selection callback and hook fields remain available.
+SDK3 removes the obsolete serial-DID token API; applications importing that
+separate SDK API must follow its identity-key DID migration guidance. There is
+no wallet storage or BRC-100 wire migration in this component release.
+
+Uncached searches explicitly enable optional-contact recovery with a two-second
+contact deadline. If Contacts cannot be read, public identity discovery can still
+succeed and the field displays a contact warning. Public lookup failures remain
+failures: the field displays an error and a **Retry identity search** button,
+not a successful empty answer or a synthetic discovered identity. Error text
+never includes the raw wallet error or contact details. Public certificate and
+wallet permission checks are retained.
+
+`useIdentitySearch` also returns `searchError`, `contactWarning`, and
+`retrySearch`. Render those fields in a headless consumer and call `retrySearch()`
+to retry the current query. A successful empty lookup has `searchError === null`.
+The deadline and abort signal bound result delivery; they do not cancel an
+underlying wallet operation or dismiss a wallet prompt.
+
+Only complete successful answers are cached, per hook and wallet/routing
+context. Partial answers and errors are not cached. `clearCache()` followed by a
+new lookup or `retrySearch()` refreshes the Contacts basket, including contacts
+edited through a different client. Pass a stable wallet instance; equivalent
+routing-option objects are compared by their scalar values. Later answers from
+superseded queries are discarded, including when the new query is a cache hit.
+
 ## Caching and Performance
 
-- **Identity Search**: Uses in-memory cache with LRU eviction (max 100 entries) and 5-minute expiry
+- **Identity Search**: Complete successful results use a cache per hook/context with LRU eviction (max 100 entries) and 5-minute expiry
 - **Identity Cards**: Uses sessionStorage-backed cache that persists across page reloads
 - **Instant Results**: Cached queries and identities return immediately (0ms response time)
-- **Debounced Search**: New searches are debounced by 300ms to prevent excessive API calls
+- **Debounced Search**: New searches are debounced by 400ms to prevent excessive API calls
 - **Memory Management**: Automatic cache cleanup prevents unbounded memory growth
 
 ## License

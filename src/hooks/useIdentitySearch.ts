@@ -1,44 +1,44 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { DisplayableIdentity, WalletInterface, IdentityClientOptions, OriginatorDomainNameStringUnder250Bytes } from "@bsv/sdk"
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import {
+  DisplayableIdentity,
+  WalletInterface,
+  IdentityClientOptions,
+  OriginatorDomainNameStringUnder250Bytes
+} from '@bsv/sdk'
 import type { AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
-import { fetchIdentities } from "../utils/identityUtils"
+import { fetchIdentities } from '../utils/identityUtils'
 
-interface UseIdentitySearchProps {
+export interface UseIdentitySearchProps {
   onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void
-  wallet?: WalletInterface | undefined,
-  options?: IdentityClientOptions | undefined,
-  originator?: OriginatorDomainNameStringUnder250Bytes | undefined
+  wallet?: WalletInterface
+  options?: Partial<IdentityClientOptions>
+  originator?: OriginatorDomainNameStringUnder250Bytes
 }
 
-// Enhanced cache with cleanup
 class SearchCache {
-  private cache = new Map<string, { data: DisplayableIdentity[], timestamp: number }>()
-  private readonly EXPIRY = 5 * 60 * 1000 // 5 minutes
-  private readonly MAX_ENTRIES = 100 // Prevent memory leaks
+  private cache = new Map<string, { data: DisplayableIdentity[]; timestamp: number }>()
 
-  get(key: string): DisplayableIdentity[] | null {
-    const normalizedKey = key.toLowerCase().trim()
-    const entry = this.cache.get(normalizedKey)
+  get(query: string): DisplayableIdentity[] | null {
+    const key = query.toLowerCase().trim()
+    const entry = this.cache.get(key)
     if (!entry) return null
-
-    if (Date.now() - entry.timestamp > this.EXPIRY) {
-      this.cache.delete(normalizedKey)
+    if (Date.now() - entry.timestamp > 5 * 60 * 1000) {
+      this.cache.delete(key)
       return null
     }
-
+    this.cache.delete(key)
+    this.cache.set(key, entry)
     return entry.data
   }
 
-  set(key: string, data: DisplayableIdentity[]): void {
-    const normalizedKey = key.toLowerCase().trim()
-
-    // Simple LRU: remove oldest entries if cache is full
-    if (this.cache.size >= this.MAX_ENTRIES) {
-      const firstKey = this.cache.keys().next().value
-      if (firstKey) this.cache.delete(firstKey)
+  set(query: string, data: DisplayableIdentity[]): void {
+    const key = query.toLowerCase().trim()
+    this.cache.delete(key)
+    if (this.cache.size >= 100) {
+      const oldest = this.cache.keys().next().value
+      if (oldest !== undefined) this.cache.delete(oldest)
     }
-
-    this.cache.set(normalizedKey, { data, timestamp: Date.now() })
+    this.cache.set(key, { data, timestamp: Date.now() })
   }
 
   clear(): void {
@@ -46,197 +46,198 @@ class SearchCache {
   }
 }
 
-const searchCache = new SearchCache()
-
-/**
- * Custom hook for identity search with debouncing, caching, and race condition prevention.
- * 
- * **Features:**
- * - Internal cache (SearchCache) with 5-minute expiry and LRU eviction
- * - Debounces search requests by 300ms to prevent excessive API calls
- * - Uses request ID system to prevent race conditions from out-of-order responses
- * 
- * **Performance:**
- * - Instant results for cached queries (0ms response time)
- * - Loading state only shows for non-cached searches
- * - Normalizes cache keys (lowercase, trimmed) for better hit rates
- * - Prevents memory leaks with max 100 cache entries
- * 
- * @param onIdentitySelected - Callback fired when user selects an identity
- * @returns Object with input handlers, state, and cache control
- */
+/** Debounced identity search. Only complete successful results are cached per hook/context. */
 export const useIdentitySearch = ({
   onIdentitySelected,
   wallet,
-  options,
+  options: providedOptions,
   originator
 }: UseIdentitySearchProps = {}) => {
-  const [inputValue, setInputValue] = useState("")
+  // Routing options are a protocol tuple and scalars. Equivalent fresh objects
+  // must not restart this effect on every state update.
+  const options = useMemo<Partial<IdentityClientOptions> | undefined>(
+    () =>
+      providedOptions
+        ? {
+            ...providedOptions,
+            ...(providedOptions.protocolID
+              ? {
+                  protocolID: [
+                    providedOptions.protocolID[0],
+                    providedOptions.protocolID[1]
+                  ] as IdentityClientOptions['protocolID']
+                }
+              : {})
+          }
+        : undefined,
+    [
+      providedOptions?.protocolID?.[0],
+      providedOptions?.protocolID?.[1],
+      providedOptions?.keyID,
+      providedOptions?.tokenAmount,
+      providedOptions?.outputIndex,
+      providedOptions?.networkPreset
+    ]
+  )
+  const [inputValue, setInputValue] = useState('')
   const [selectedIdentity, setSelectedIdentity] = useState<DisplayableIdentity | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [identities, setIdentities] = useState<DisplayableIdentity[]>([])
-  const [lastSearchTerm, setLastSearchTerm] = useState("")
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const [contactWarning, setContactWarning] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
+  const cache = useRef(new SearchCache())
+  const requestId = useRef(0)
+  const controller = useRef<AbortController | null>(null)
+  const justSelected = useRef<string | null>(null)
+  const context = useRef({ wallet, options, originator })
 
-  // Refs for managing async operations
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const lastRequestIdRef = useRef<number>(0)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const justSelectedRef = useRef<boolean>(false) // Prevent search after selection
-  const shouldClearResultsRef = useRef<boolean>(false) // Track explicit clear actions (X button)
-
-  // Direct search function with improved error handling and state management
-  const performSearch = useCallback(async (query: string, requestId: number) => {
-    // Check cache first
-    const cachedResult = searchCache.get(query)
-    if (cachedResult && requestId === lastRequestIdRef.current) {
-      setIdentities(cachedResult)
-      setLastSearchTerm(query)
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      // Only proceed if this is still the latest request
-      if (requestId !== lastRequestIdRef.current) {
-        return
-      }
-
-      // Abort any previous in-flight request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-      const controller = new AbortController()
-      abortControllerRef.current = controller
-
-      setIsLoading(true)
-
-      const searchResults = await fetchIdentities(query, wallet, options, originator, controller.signal)
-
-      // Verify this is still the latest request before updating state (prevents race conditions)
-      if (requestId === lastRequestIdRef.current) {
-        setIdentities(searchResults)
-        searchCache.set(query, searchResults)
-        setLastSearchTerm(query)
-        setIsLoading(false)
-      }
-    } catch (error: unknown) {
-      // Silently ignore aborted requests
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      // Only handle error if this is still the latest request
-      if (requestId === lastRequestIdRef.current) {
-        console.error('Identity search failed:', error)
-        setIdentities([])
-        setIsLoading(false)
-      }
-    }
-  }, [wallet, options, originator])
-
-  // Debounced search effect with instant cache lookup
-  useEffect(() => {
-    // Skip search if we just selected an option
-    if (justSelectedRef.current) {
-      justSelectedRef.current = false
-      return
-    }
-
-    // Clear previous timeout
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current)
-    }
-
-    // Handle empty input - only clear results on explicit clear (X button clicked)
-    if (!inputValue.trim()) {
-      setIsLoading(false)
-      if (shouldClearResultsRef.current) {
-        setIdentities([])
-        setLastSearchTerm("")
-        shouldClearResultsRef.current = false
-      }
-      return
-    }
-
-    // Check cache immediately for instant feedback
-    const cachedResult = searchCache.get(inputValue.trim())
-    if (cachedResult) {
-      setIdentities(cachedResult)
-      setLastSearchTerm(inputValue.trim())
-      setIsLoading(false)
-      return
-    }
-
-    // Clear existing results if searching for something different
-    // Avoids showing stale results while new search loads
-    const currentQuery = inputValue.trim()
-    if (identities.length > 0 && lastSearchTerm !== currentQuery) {
-      setIdentities([])
-    }
-
-    // Increment request ID for race condition prevention
-    const requestId = ++lastRequestIdRef.current
-
-    // Show loading state immediately for non-cached searches
-    setIsLoading(true)
-
-    // Debounce the search - wait 400ms after user stops typing
-    debounceTimeoutRef.current = setTimeout(() => {
-      performSearch(inputValue.trim(), requestId)
-    }, 400)
-
-    // Cleanup function
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
-      }
-    }
-  }, [inputValue, performSearch])
-
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
-      }
-      abortControllerRef.current?.abort()
-    }
+  const invalidate = useCallback(() => {
+    requestId.current++
+    controller.current?.abort()
+    controller.current = null
   }, [])
 
-  const handleInputChange = useCallback((
-    _: React.SyntheticEvent,
-    newInputValue: string,
-    reason: AutocompleteInputChangeReason
-  ) => {
-    // Mark for clearing only on explicit clear button (X) or manual delete to empty
-    if (reason === 'clear' || (reason === 'input' && inputValue.trim() && !newInputValue.trim())) {
-      shouldClearResultsRef.current = true
+  useEffect(() => {
+    invalidate()
+    if (
+      context.current.wallet !== wallet ||
+      context.current.options !== options ||
+      context.current.originator !== originator
+    ) {
+      cache.current.clear()
+      context.current = { wallet, options, originator }
+    }
+    setSearchError(null)
+    setContactWarning(null)
+    const selectedInput = justSelected.current
+    justSelected.current = null
+    if (selectedInput !== null && selectedInput === inputValue) {
+      setIsLoading(false)
+      return
     }
 
-    setInputValue(newInputValue)
-  }, [inputValue])
-
-  const handleSelect = useCallback((_: React.SyntheticEvent, newValue: DisplayableIdentity | string | null) => {
-    if (newValue && typeof newValue !== 'string') {
-      // Mark that we just selected to prevent triggering search on the next useEffect
-      justSelectedRef.current = true
-
-      // Clear search state after selection
+    const query = inputValue.trim()
+    if (!query) {
       setIdentities([])
-      setLastSearchTerm("")
-      setSelectedIdentity(newValue)
-      onIdentitySelected?.(newValue)
-    } else {
-      setSelectedIdentity(null)
+      setIsLoading(false)
+      return
     }
-  }, [onIdentitySelected])
+    const cached = cache.current.get(query)
+    if (cached) {
+      setIdentities(cached)
+      setIsLoading(false)
+      return
+    }
 
-  // Memoized return object to prevent unnecessary re-renders
-  return useMemo(() => ({
-    inputValue,
-    isLoading,
-    identities,
-    selectedIdentity,
-    handleInputChange,
-    handleSelect,
-    clearCache: searchCache.clear.bind(searchCache),
-  }), [inputValue, isLoading, identities, selectedIdentity, handleInputChange, handleSelect])
+    setIdentities([])
+    setIsLoading(true)
+    const currentRequest = requestId.current
+    const abort = new AbortController()
+    controller.current = abort
+    const current = () => requestId.current === currentRequest && !abort.signal.aborted
+    const timeout = setTimeout(() => {
+      let partial = false
+      void fetchIdentities(query, wallet, options, originator, abort.signal, () => {
+        partial = true
+        if (current())
+          setContactWarning('Saved contacts are unavailable. Results may exclude saved contacts.')
+      })
+        .then((result) => {
+          if (!current()) return
+          setIdentities(result)
+          if (!partial) cache.current.set(query, result)
+        })
+        .catch(() => {
+          if (!current()) return
+          setIdentities([])
+          setContactWarning(null)
+          setSearchError('Identity lookup failed. Check wallet access and try again.')
+        })
+        .finally(() => {
+          if (current()) setIsLoading(false)
+        })
+    }, 400)
+
+    return () => {
+      clearTimeout(timeout)
+      abort.abort()
+    }
+  }, [inputValue, wallet, options, originator, retryVersion, invalidate])
+
+  useEffect(
+    () => () => {
+      invalidate()
+    },
+    [invalidate]
+  )
+
+  const handleInputChange = useCallback(
+    (_: React.SyntheticEvent | null, value: string, reason: AutocompleteInputChangeReason) => {
+      if (value === inputValue) return
+      // Supersede old work immediately, including when the new query is a cache hit.
+      invalidate()
+      setSearchError(null)
+      setContactWarning(null)
+      setIsLoading(Boolean(value.trim()) && reason !== 'reset')
+      setInputValue(value)
+    },
+    [inputValue, invalidate]
+  )
+
+  const handleSelect = useCallback(
+    (_: React.SyntheticEvent | null, value: DisplayableIdentity | string | null) => {
+      invalidate()
+      setIsLoading(false)
+      setSearchError(null)
+      setContactWarning(null)
+      if (value && typeof value !== 'string') {
+        justSelected.current = value.name
+        setIdentities([])
+        setInputValue(value.name)
+        setSelectedIdentity(value)
+        onIdentitySelected?.(value)
+      } else {
+        setSelectedIdentity(null)
+      }
+    },
+    [invalidate, onIdentitySelected]
+  )
+
+  const clearCache = useCallback(() => {
+    cache.current.clear()
+  }, [])
+  const retrySearch = useCallback(() => {
+    invalidate()
+    cache.current.clear()
+    justSelected.current = null
+    setRetryVersion((version) => version + 1)
+  }, [invalidate])
+
+  return useMemo(
+    () => ({
+      inputValue,
+      isLoading,
+      identities,
+      selectedIdentity,
+      searchError,
+      contactWarning,
+      handleInputChange,
+      handleSelect,
+      clearCache,
+      retrySearch
+    }),
+    [
+      inputValue,
+      isLoading,
+      identities,
+      selectedIdentity,
+      searchError,
+      contactWarning,
+      handleInputChange,
+      handleSelect,
+      clearCache,
+      retrySearch
+    ]
+  )
 }
