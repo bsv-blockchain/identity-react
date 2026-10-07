@@ -1,13 +1,9 @@
-import React, {
-  memo,
-  useCallback,
-  useMemo,
-  useState
-} from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import {
   Autocomplete,
   Avatar,
   Badge,
+  Button,
   Box,
   IconButton,
   LinearProgress,
@@ -20,8 +16,7 @@ import {
   Typography
 } from '@mui/material'
 import { Theme, useTheme } from '@mui/material/styles'
-import SearchIcon from '@mui/icons-material/Search'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { Search as SearchIcon, ContentCopy as ContentCopyIcon } from '@mui/icons-material'
 import { NoMncModal } from 'metanet-react-prompt'
 import { DisplayableIdentity } from '@bsv/sdk'
 import { Img } from '@bsv/uhrp-react'
@@ -35,11 +30,11 @@ const copyEvents = {
   subscribe: (listener: () => void): (() => void) => {
     copyEvents.listeners.push(listener)
     return () => {
-      copyEvents.listeners = copyEvents.listeners.filter(l => l !== listener)
+      copyEvents.listeners = copyEvents.listeners.filter((l) => l !== listener)
     }
   },
   emit: () => {
-    copyEvents.listeners.forEach(listener => listener())
+    copyEvents.listeners.forEach((listener) => listener())
   }
 }
 
@@ -94,7 +89,7 @@ const IdentityItem = memo(({ option, props }: IdentityItemProps) => {
       navigator.clipboard
         .writeText(option.identityKey)
         .then(copyEvents.emit)
-        .catch(err => console.error('Could not copy identity key', err))
+        .catch((err) => console.error('Could not copy identity key', err))
     },
     [option.identityKey]
   )
@@ -185,8 +180,11 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     isLoading,
     identities,
     selectedIdentity,
+    searchError,
+    contactWarning,
+    retrySearch,
     handleInputChange,
-    handleSelect,
+    handleSelect
   } = useIdentitySearch({ onIdentitySelected })
 
   const [mncMissing, setMncMissing] = useState(false)
@@ -202,19 +200,19 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
         return opts
       }
 
-      if (isIdentityKey(inputValue) && !isLoading) {
+      if (isIdentityKey(inputValue) && !isLoading && !searchError) {
         return [
           {
             ...DEFAULT_IDENTITY,
             name: 'Custom Identity Key',
-            identityKey: inputValue
+            identityKey: inputValue.toLowerCase()
           }
         ]
       }
 
       return []
     },
-    [isLoading]
+    [isLoading, searchError]
   )
 
   /** Filter and deduplicate search results */
@@ -228,7 +226,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     let uniqueOptions = identities
     if (deduplicate) {
       const seen = new Set<string>()
-      uniqueOptions = identities.filter(identity => {
+      uniqueOptions = identities.filter((identity) => {
         if (seen.has(identity.identityKey)) return false
         seen.add(identity.identityKey)
         return true
@@ -282,9 +280,18 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             inputValue={inputValue}
             onInputChange={handleInputChange}
             onChange={handleSelect}
-            getOptionLabel={o => (typeof o === 'string' ? o : o.name)}
+            getOptionLabel={(o) => (typeof o === 'string' ? o : o.name)}
             filterOptions={filterOptions}
-            noOptionsText={inputValue.trim() ? "No identities found" : "Start typing to search for identities"}
+            noOptionsText={
+              isLoading
+                ? 'Searching identities…'
+                : searchError ||
+                  (inputValue.trim()
+                    ? 'No identities found'
+                    : 'Start typing to search for identities')
+            }
+            loading={isLoading}
+            loadingText="Searching identities…"
             open={autocompleteOpen}
             onOpen={() => setAutocompleteOpen(true)}
             onClose={() => setAutocompleteOpen(false)}
@@ -304,12 +311,13 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             renderOption={(props, option: DisplayableIdentity) => (
               <IdentityItem key={option.identityKey} option={option} props={props} />
             )}
-            renderInput={params => (
+            renderInput={(params) => (
               <Box>
                 <TextField
                   {...params}
                   label="Search Identity"
                   variant="filled"
+                  error={Boolean(searchError)}
                   onFocus={handleFocus}
                   InputProps={{
                     ...params.InputProps,
@@ -332,6 +340,19 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
             )}
             sx={{ width, bgcolor: theme?.palette.background.paper }}
           />
+          {searchError && (
+            <Box role="alert" sx={{ p: 1 }}>
+              <Typography variant="caption">{searchError}</Typography>
+              <Button size="small" onClick={retrySearch}>
+                Retry identity search
+              </Button>
+            </Box>
+          )}
+          {contactWarning && (
+            <Typography role="status" variant="caption" sx={{ display: 'block', p: 1 }}>
+              {contactWarning}
+            </Typography>
+          )}
         </Box>
       </Box>
     </>

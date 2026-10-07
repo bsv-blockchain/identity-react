@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { DEFAULT_IDENTITY, IdentityProps } from '../types';
 import { IdentityClient, DisplayableIdentity } from '@bsv/sdk';
 import { Img } from '@bsv/uhrp-react';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { ContentCopy as ContentCopyIcon } from '@mui/icons-material';
 
 // Create an IdentityClient instance
 const identityClient = new IdentityClient();

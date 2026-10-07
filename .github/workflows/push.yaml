@@ -7,7 +7,6 @@ on:
   pull_request:
 
 permissions:
-  id-token: write  # Required for OIDC
   contents: read
 
 jobs:
@@ -16,16 +15,35 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [22, 24]
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
-    - run: npm ci
-    - run: npm run lint:ci --if-present
-    - run: npm run test:coverage --if-present
+    - run: npm ci --ignore-scripts
+    - run: npm run lint:ci
+    - run: npm run typecheck
+    - run: npm run build
+    - run: npm audit --audit-level=high
+    - run: npm run test:coverage
+    - run: npm run test:consumer
+    - name: Pack the qualified publication artifact
+      if: matrix.node-version == 24
+      run: |
+        npm pack --ignore-scripts --json > publication.json
+        sha256sum bsv-identity-react-*.tgz > publication.sha256
+    - name: Retain the exact qualified package
+      if: matrix.node-version == 24
+      uses: actions/upload-artifact@v4
+      with:
+        name: identity-react-npm-${{ github.sha }}
+        path: |
+          bsv-identity-react-*.tgz
+          publication.json
+          publication.sha256
+        if-no-files-found: error
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -37,6 +55,9 @@ jobs:
   publish:
     name: Publish
     needs: test
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
@@ -44,9 +65,13 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: '24'
-        registry-url: 'https://registry.npmjs.org'
-    - run: npm ci
-    - run: npm run build
+    - uses: actions/download-artifact@v4
+      with:
+        name: identity-react-npm-${{ github.sha }}
+        path: release
+    - name: Verify the immutable publication artifact
+      working-directory: release
+      run: sha256sum --check publication.sha256
     - name: Check if version already published
       id: check-version
       run: |
@@ -55,9 +80,10 @@ jobs:
 
         echo "Package: $PACKAGE_NAME@$PACKAGE_VERSION"
 
-        # Check if this version exists on npm
-        if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
-          echo "Version $PACKAGE_VERSION already published"
+        # Existing immutable versions must be the same qualified bytes.
+        if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" dist.integrity --json > registry-integrity.json 2>/dev/null; then
+          node -e 'const assert = require("node:assert/strict"); assert.equal(require("./registry-integrity.json"), require("./release/publication.json")[0].integrity, "Published version differs from the qualified artifact")'
+          echo "Version $PACKAGE_VERSION already published with matching integrity"
           echo "should_publish=false" >> $GITHUB_OUTPUT
         else
           echo "Version $PACKAGE_VERSION not yet published"
@@ -65,7 +91,7 @@ jobs:
         fi
     - name: Publish to npm
       if: steps.check-version.outputs.should_publish == 'true'
-      run: npm publish
+      run: npm publish "release/$(node -p 'require("./release/publication.json")[0].filename')" --ignore-scripts --provenance
     - name: Skip publishing
       if: steps.check-version.outputs.should_publish == 'false'
       run: echo "Skipping publish - version already exists on npm"
