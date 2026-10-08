@@ -63,6 +63,21 @@ describe('search results and failure state', () => {
     expect(hook.result.current.identities).toHaveLength(2)
   })
 
+  it('refreshes cached results when a consumer changes the deduplication setting', async () => {
+    fetch.mockResolvedValue([identity('Alice'), identity('Alice')])
+    const hook = renderHook((props: UseIdentitySearchProps) => useIdentitySearch(props), {
+      initialProps: { deduplicate: true }
+    })
+    input(hook, 'alice')
+    await settle()
+    expect(hook.result.current.identities).toHaveLength(1)
+
+    hook.rerender({ deduplicate: false })
+    await settle()
+    expect(hook.result.current.identities).toHaveLength(2)
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
   it('does not restart a lookup for equivalent freshly allocated routing options', async () => {
     const hook = renderHook(() =>
       useIdentitySearch({

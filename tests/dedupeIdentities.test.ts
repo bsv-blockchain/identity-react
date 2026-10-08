@@ -37,4 +37,28 @@ describe('dedupeIdentitiesByKey', () => {
 
     expect(dedupeIdentitiesByKey([first, second], 'brayden')).toEqual([first])
   })
+
+  it('prefers a phone certificate for a phone-number query', () => {
+    const generic = {
+      ...defaultIdentity,
+      identityKey: keyA,
+      name: 'Contact',
+      badgeLabel: 'Entity certified by Example'
+    }
+    const phone = {
+      ...defaultIdentity,
+      identityKey: keyA,
+      name: '+12025550123',
+      badgeLabel: 'Phone certified by Example'
+    }
+
+    expect(dedupeIdentitiesByKey([generic, phone], '+1202555')).toEqual([phone])
+  })
+
+  it('drops entries without an identity key', () => {
+    const empty = { ...defaultIdentity, identityKey: '', name: 'Unknown' }
+    const valid = { ...defaultIdentity, identityKey: keyA, name: 'Alice' }
+
+    expect(dedupeIdentitiesByKey([empty, valid], 'alice')).toEqual([valid])
+  })
 })

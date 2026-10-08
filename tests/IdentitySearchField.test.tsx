@@ -53,6 +53,17 @@ describe('visible search feedback', () => {
     expect(options[1].textContent).toContain(otherKey.slice(0, 10))
   })
 
+  it('can show every certificate when deduplication is explicitly disabled', async () => {
+    fetch.mockResolvedValue([
+      { ...identity, name: 'bob@projectbabbage.com' },
+      { ...identity, name: 'bob@projectbabbage.com' }
+    ])
+    render(<IdentitySearchField deduplicate={false} />)
+    await search('bob@proj')
+
+    expect(screen.getAllByRole('option')).toHaveLength(2)
+  })
+
   it('renders a public lookup failure and retry without presenting a raw key as a discovered identity', async () => {
     fetch
       .mockRejectedValueOnce(new Error('sensitive wallet detail'))
