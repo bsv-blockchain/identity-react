@@ -30,6 +30,39 @@ afterEach(() => {
 })
 
 describe('search results and failure state', () => {
+  it('returns and caches one best matching presentation per identity key', async () => {
+    const key = `02${'b'.repeat(64)}`
+    const generic = {
+      ...identity('Bob'),
+      identityKey: key,
+      badgeLabel: 'Entity certified by Example'
+    }
+    const email = {
+      ...identity('bob@projectbabbage.com'),
+      identityKey: key,
+      badgeLabel: 'Email certified by Example'
+    }
+    fetch.mockResolvedValue([generic, email])
+    const hook = renderHook(() => useIdentitySearch())
+    input(hook, 'bob@proj')
+    await settle()
+    expect(hook.result.current.identities).toEqual([email])
+    input(hook, 'other')
+    await settle()
+    input(hook, 'bob@proj')
+    await settle()
+    expect(hook.result.current.identities).toEqual([email])
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('preserves the opt-out for consumers that need every certificate', async () => {
+    fetch.mockResolvedValue([identity('Alice'), identity('Alice')])
+    const hook = renderHook(() => useIdentitySearch({ deduplicate: false }))
+    input(hook, 'alice')
+    await settle()
+    expect(hook.result.current.identities).toHaveLength(2)
+  })
+
   it('does not restart a lookup for equivalent freshly allocated routing options', async () => {
     const hook = renderHook(() =>
       useIdentitySearch({

@@ -31,6 +31,28 @@ afterEach(() => {
 })
 
 describe('visible search feedback', () => {
+  it('shows one option per key while keeping people with the same email on different keys', async () => {
+    const otherKey = `03${'a'.repeat(64)}`
+    fetch.mockResolvedValue([
+      { ...identity, name: 'Bob', badgeLabel: 'Entity certified by Example' },
+      { ...identity, name: 'bob@projectbabbage.com', badgeLabel: 'Email certified by Example' },
+      {
+        ...identity,
+        identityKey: otherKey,
+        name: 'bob@projectbabbage.com',
+        badgeLabel: 'Email certified by Example'
+      }
+    ])
+    render(<IdentitySearchField />)
+    await search('bob@proj')
+
+    const options = screen.getAllByRole('option')
+    expect(options).toHaveLength(2)
+    expect(options[0].textContent).toContain('bob@projectbabbage.com')
+    expect(options[0].textContent).toContain(key.slice(0, 10))
+    expect(options[1].textContent).toContain(otherKey.slice(0, 10))
+  })
+
   it('renders a public lookup failure and retry without presenting a raw key as a discovered identity', async () => {
     fetch
       .mockRejectedValueOnce(new Error('sensitive wallet detail'))

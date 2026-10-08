@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1
+
+- Deduplicate search results by identity key by default in both the search field
+  and headless hook. Keep distinct identities that happen to share a name.
+- When several certificates resolve to one key, display the certificate whose
+  name and field type best match the query. Preserve the first result on ties.
+- Keep the existing `deduplicate={false}` search-field option and expose the
+  same opt-out to headless hook consumers.
+
 ## 2.0.0
 
 - Adopt SDK 3.2.0 identity search recovery; require Node >=22 tooling and React18.

@@ -7,12 +7,15 @@ import {
 } from '@bsv/sdk'
 import type { AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import { fetchIdentities } from '../utils/identityUtils'
+import { dedupeIdentitiesByKey } from '../utils/dedupeIdentities'
 
 export interface UseIdentitySearchProps {
   onIdentitySelected?: (selectedIdentity: DisplayableIdentity) => void
   wallet?: WalletInterface
   options?: Partial<IdentityClientOptions>
   originator?: OriginatorDomainNameStringUnder250Bytes
+  /** Return one result per identity key, preferring the certificate that best matches the query. */
+  deduplicate?: boolean
 }
 
 class SearchCache {
@@ -51,7 +54,8 @@ export const useIdentitySearch = ({
   onIdentitySelected,
   wallet,
   options: providedOptions,
-  originator
+  originator,
+  deduplicate = true
 }: UseIdentitySearchProps = {}) => {
   // Routing options are a protocol tuple and scalars. Equivalent fresh objects
   // must not restart this effect on every state update.
@@ -90,7 +94,7 @@ export const useIdentitySearch = ({
   const requestId = useRef(0)
   const controller = useRef<AbortController | null>(null)
   const justSelected = useRef<string | null>(null)
-  const context = useRef({ wallet, options, originator })
+  const context = useRef({ wallet, options, originator, deduplicate })
 
   const invalidate = useCallback(() => {
     requestId.current++
@@ -103,10 +107,11 @@ export const useIdentitySearch = ({
     if (
       context.current.wallet !== wallet ||
       context.current.options !== options ||
-      context.current.originator !== originator
+      context.current.originator !== originator ||
+      context.current.deduplicate !== deduplicate
     ) {
       cache.current.clear()
-      context.current = { wallet, options, originator }
+      context.current = { wallet, options, originator, deduplicate }
     }
     setSearchError(null)
     setContactWarning(null)
@@ -145,8 +150,9 @@ export const useIdentitySearch = ({
       })
         .then((result) => {
           if (!current()) return
-          setIdentities(result)
-          if (!partial) cache.current.set(query, result)
+          const presented = deduplicate ? dedupeIdentitiesByKey(result, query) : result
+          setIdentities(presented)
+          if (!partial) cache.current.set(query, presented)
         })
         .catch(() => {
           if (!current()) return
@@ -163,7 +169,7 @@ export const useIdentitySearch = ({
       clearTimeout(timeout)
       abort.abort()
     }
-  }, [inputValue, wallet, options, originator, retryVersion, invalidate])
+  }, [inputValue, wallet, options, originator, deduplicate, retryVersion, invalidate])
 
   useEffect(
     () => () => {

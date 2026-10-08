@@ -185,7 +185,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     retrySearch,
     handleInputChange,
     handleSelect
-  } = useIdentitySearch({ onIdentitySelected })
+  } = useIdentitySearch({ onIdentitySelected, deduplicate })
 
   const [mncMissing, setMncMissing] = useState(false)
   const [autocompleteOpen, setAutocompleteOpen] = useState(false)
@@ -215,7 +215,7 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
     [isLoading, searchError]
   )
 
-  /** Filter and deduplicate search results */
+  /** Show search results or a raw-key fallback. */
   const filteredIdentities = useMemo(() => {
     // Show results even when input is empty (clearOnBlur=false preserves results)
     // Only hide on initial render when no search has been performed
@@ -223,18 +223,8 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       return []
     }
 
-    let uniqueOptions = identities
-    if (deduplicate) {
-      const seen = new Set<string>()
-      uniqueOptions = identities.filter((identity) => {
-        if (seen.has(identity.identityKey)) return false
-        seen.add(identity.identityKey)
-        return true
-      })
-    }
-
-    return filterOptions(uniqueOptions, { inputValue })
-  }, [identities, deduplicate, filterOptions, inputValue])
+    return filterOptions(identities, { inputValue })
+  }, [identities, filterOptions, inputValue])
 
   const handleFocus = useCallback(() => {
     // Open dropdown if we have results (clearOnBlur=false preserves them)

@@ -10,6 +10,7 @@ export default defineConfig({
       include: [
         'src/hooks/useIdentitySearch.ts',
         'src/utils/identityUtils.ts',
+        'src/utils/dedupeIdentities.ts',
         'src/components/IdentitySearchField.tsx'
       ]
     }

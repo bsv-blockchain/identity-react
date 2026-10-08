@@ -167,6 +167,14 @@ edited through a different client. Pass a stable wallet instance; equivalent
 routing-option objects are compared by their scalar values. Later answers from
 superseded queries are discarded, including when the new query is a cache hit.
 
+Search results contain one entry per identity key by default, including in the
+headless hook. When multiple certificates belong to the same key, the displayed
+entry favors the name and certificate field type matching the query (for example,
+an email certificate for an email search); equal matches keep the first result.
+Different keys with the same display name remain separate. Pass `deduplicate={false}`
+to `IdentitySearchField` or `deduplicate: false` to `useIdentitySearch` to inspect
+every returned certificate.
+
 ## Caching and Performance
 
 - **Identity Search**: Complete successful results use a cache per hook/context with LRU eviction (max 100 entries) and 5-minute expiry
