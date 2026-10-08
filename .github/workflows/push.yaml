@@ -91,7 +91,7 @@ jobs:
         fi
     - name: Publish to npm
       if: steps.check-version.outputs.should_publish == 'true'
-      run: npm publish "release/$(node -p 'require("./release/publication.json")[0].filename')" --ignore-scripts --provenance
+      run: npm publish "./release/$(node -p 'require("./release/publication.json")[0].filename')" --ignore-scripts --provenance
     - name: Skip publishing
       if: steps.check-version.outputs.should_publish == 'false'
       run: echo "Skipping publish - version already exists on npm"
