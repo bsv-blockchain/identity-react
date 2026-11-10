@@ -177,4 +177,4 @@ superseded queries are discarded, including when the new query is a cache hit.
 
 ## License
 
-The license for the code in this repository is the Open BSV License.
+The license for the code in this repository is the Apache License 2.0.
