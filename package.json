@@ -16,6 +16,7 @@
   "types": "dist/types/index.d.ts",
   "files": [
     "LICENSE",
+    "PATENTS",
     "NOTICE",
     "dist/**/*",
     "CHANGELOG.md"
