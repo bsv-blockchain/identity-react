@@ -1,6 +1,6 @@
 {
   "name": "@bsv/identity-react",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "React components for resolving identity information on the MetaNet.",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "@bsv/sdk": "^3.2.0",
+    "@bsv/sdk": "^4.1.1",
     "@bsv/uhrp-react": "^1.0.6",
     "metanet-react-prompt": "^1.0.6"
   },
