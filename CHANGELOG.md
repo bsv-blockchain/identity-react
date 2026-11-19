@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0
+
+- Adopt `@bsv/sdk` 4.1.1. Public types (`WalletInterface`, `IdentityClientOptions`,
+  `DisplayableIdentity`) now come from SDK 4, so consumers must use SDK >=4.1.1.
+- No component, hook or selection API change. No BRC-100 wire, wallet permission,
+  signing or storage migration for this package.
+
+Migration: upgrade the application's `@bsv/sdk` to ^4.1.1. Applications that use
+binary wallet transport with legacy certificate types must also upgrade their
+wallet adapters, per the SDK 4.0.0 notes. Prior 2.0.0 remains for SDK3 consumers.
+
 ## 2.0.0
 
 - Adopt SDK 3.2.0 identity search recovery; require Node >=22 tooling and React18.
